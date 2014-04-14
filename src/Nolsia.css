@@ -1,0 +1,48 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+
+global
+{
+	font-family: NanumGothic, Arial;
+	font-size: 12;
+	font-weight: normal;
+}
+
+
+@font-face
+{
+	fontFamily: NanumGothic;
+	src: url("assets\fonts\NanumGothic.ttf");
+	embedAsCFF: true;
+	fontWeight: normal;
+	unicodeRange: U+0020-007E,U+1100-11F9,U+3000-303F,U+3131-318E,U+327F,U+AC00-D7A3,U+FF01-FF60;
+}
+
+@font-face
+{
+	fontFamily: NanumGothic;
+	src: url("assets\fonts\NanumGothicBold.ttf");
+	embedAsCFF: true;
+	fontWeight: bold;
+	unicodeRange: U+0020-007E,U+1100-11F9,U+3000-303F,U+3131-318E,U+327F,U+AC00-D7A3,U+FF01-FF60;
+}
+
+@font-face
+{
+	fontFamily: NanumGothicMX;
+	src: url("assets\fonts\NanumGothic.ttf");
+	fontWeight:normal;
+	advancedAntiAliasing: true;
+	unicodeRange: U+0020-007E,U+1100-11F9,U+3000-303F,U+3131-318E,U+327F,U+AC00-D7A3,U+FF01-FF60;
+}
+@font-face
+{
+	fontFamily: NanumGothicMX;
+	src: url("assets\fonts\NanumGothicBold.ttf");
+	fontWeight: bold;
+	advancedAntiAliasing: true;
+	unicodeRange: U+0020-007E,U+1100-11F9,U+3000-303F,U+3131-318E,U+327F,U+AC00-D7A3,U+FF01-FF60;
+}
+

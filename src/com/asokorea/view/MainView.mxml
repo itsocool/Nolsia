@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="100%" height="100%" currentState="{ model.currentState }" >
+	<fx:Script>
+		<![CDATA[
+			import com.asokorea.model.enum.ExportFormat;
+			import com.asokorea.model.enum.Icons;
+			import com.asokorea.model.vo.HostVo;
+			import com.asokorea.presentation.MainViewPresentationModel;
+			import com.asokorea.supportclass.FileItemVO;
+			
+			import mx.events.FlexEvent;
+
+			[Bindable]
+			[Inject]
+			public var model:MainViewPresentationModel;
+
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="FIRST" />
+		<s:State name="OPEN" />
+		<s:State name="SELECTED" />
+	</s:states>
+	<s:layout>
+		<s:BasicLayout />
+	</s:layout>
+
+	<s:Label includeIn="FIRST" fontSize="120" fontWeight="bold" horizontalCenter="0" rotationZ="27"
+			 text="{model.appModel.appName} {model.appModel.appVersionLabel}" textAlpha="0.5" verticalCenter="0" />
+
+	<s:BorderContainer includeIn="FIRST" width="425" height="500" horizontalCenter="0" verticalCenter="0" cornerRadius="10"
+					   borderWeight="10" borderColor="#D5E3E5" borderAlpha=".7" dropShadowVisible="true">
+		<s:layout>
+			<s:VerticalLayout paddingLeft="10" paddingTop="10" paddingRight="10" paddingBottom="10" />
+		</s:layout>
+		<s:HGroup width="100%">
+			<mx:Button label="Add Connection" icon="{Icons.ADD}" />
+			<mx:Spacer width="100%" />
+			<mx:LinkButton textAlign="right" id="btnOpenSettings" icon="{Icons.WRENCH}" label="Settings" />
+			<mx:LinkButton textAlign="right" icon="{Icons.HELP}" label="Help" />
+		</s:HGroup>
+		<s:List id="listConnections" dataProvider="{model.appModel.settings}" labelField="name" width="100%" height="100%">
+		</s:List>
+	</s:BorderContainer>
+
+	<s:HGroup width="100%" height="100%">
+		<s:VGroup includeIn="OPEN,SELECTED" width="100%" height="100%">
+			<s:Button id="btnReadHost" click="model.browseHostList()" label="1. Host List Read" />
+			<s:Button id="btnLoopHost" click="model.start(model.appModel.hostList)" label="Host Loop" enabled="{!!model.appModel.hostList}" />
+			<s:TextInput id="tipPath" width="100%" editable="false" text="{model.reader.selectedLogPath}" />
+			<s:HGroup>
+				<s:Button label="Log Open 로그 오픈" click="model.selectLogDir()" fontSize="20" fontWeight="normal" />
+				<s:Button label="Log 읽기" click="model.readLog(ddlExt.selectedItem)" fontFamily="NanumGothicCFF" fontSize="20"
+						  fontWeight="normal" />
+				<s:Button click="model.save(ExportFormat.HTML)" label="3. Save Html" enabled="{!!model.reader.fileList}" />
+				<!--			<s:Button includeIn="OPEN" label="단추" click="button4_clickHandler(event)" />
+							<s:TextInput id="tipCommand" />
+							<s:Button includeIn="OPEN" label="전송" click="button5_clickHandler(event)" />-->
+			</s:HGroup>
+			<s:DropDownList id="ddlExt" requireSelection="true" change="model.filterChange(ddlExt.selectedItem)" labelField="extension">
+				<s:dataProvider>
+					<s:ArrayCollection source="{model.appModel.fileFilters}" />
+				</s:dataProvider>
+			</s:DropDownList>
+
+			<s:HGroup>
+				<s:Label text="{model.reader.allFilesCount}" />
+				<s:Label text="/" />
+				<s:Label text="{model.reader.fileList.length}" />
+				<s:Label text="/" />
+				<s:Label text="{model.reader.readCount}" id="lblReadCount" />
+				<s:Label text="(All/Target/Done)" />
+			</s:HGroup>
+			<s:DataGrid id="dg" height="100%" dataProvider="{model.appModel.hostList}">
+				<s:columns>
+					<s:ArrayList>
+						<s:GridColumn dataField="no" headerText="No" width="40" />
+						<s:GridColumn dataField="hostName" headerText="Host" width="100" />
+						<s:GridColumn dataField="loginId" headerText="id" width="80" />
+						<s:GridColumn dataField="password" headerText="password" width="80" />
+						<s:GridColumn dataField="onLine" headerText="onLine" width="80" />
+						<s:GridColumn dataField="label" headerText="label" width="500" />
+					</s:ArrayList>
+				</s:columns>
+			</s:DataGrid>
+		</s:VGroup>
+		<s:VGroup includeIn="OPEN,SELECTED" width="100%" height="100%">
+			<s:TextArea id="txtLog" includeIn="OPEN" width="100%" height="250" />
+			<s:TextArea id="txtErrot" includeIn="OPEN" width="100%" height="250" text="{HostVo(dg.selectedItem).label}" />
+			<s:List dataProvider="{HostVo(dg.selectedItem).userList}" width="100%" height="100%" />
+		</s:VGroup>
+	</s:HGroup>
+</s:Group>

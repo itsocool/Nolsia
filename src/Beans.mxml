@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<swiz:BeanProvider xmlns:swiz="http://swiz.swizframework.org"
+				   xmlns:fx="http://ns.adobe.com/mxml/2009"
+				   xmlns:mx="library://ns.adobe.com/flex/mx">
+
+	<fx:Script>
+		<![CDATA[
+			
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+
+		<!--<mx:HTTPService
+			id="employeesService"
+			url="assets/xml/Employees.xml"
+			resultFormat="e4x"
+			showBusyCursor="true"
+			/>-->
+
+	</fx:Declarations>
+
+	<!-- Application level model and controller.
+	Handle login, hold the state and user of the application -->
+	<model:AppModel id="appModel" xmlns:model="com.asokorea.model.*" />
+
+	<supportclass:FileReader xmlns:supportclass="com.asokorea.supportclass.*" />
+
+	<controller:AppController xmlns:controller="com.asokorea.controller.*" />
+
+
+	<model:NavigationModel id="navModel" xmlns:model="com.asokorea.model.*" />
+
+	<!-- Presentation models -->
+	<presentation:MainViewPresentationModel xmlns:presentation="com.asokorea.presentation.*" />
+
+	<!-- Presentation models are generally injected into views and should be declared as Prototype
+	to be instantiated lazy when the corresponding view is added to the display chain -->
+
+	<!-- SharedObject Helper -->
+	<swiz:SharedObjectBean name="soBean" />
+
+</swiz:BeanProvider>

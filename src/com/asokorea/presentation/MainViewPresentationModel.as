@@ -4,6 +4,7 @@ package com.asokorea.presentation
 	import com.asokorea.event.FileEventEX;
 	import com.asokorea.event.FileReaderEvent;
 	import com.asokorea.event.LoopEvent;
+	import com.asokorea.event.TaskEvent;
 	import com.asokorea.model.AppModel;
 	import com.asokorea.supportclass.FileExtensionFilter;
 	import com.asokorea.supportclass.FileReader;
@@ -299,19 +300,6 @@ package com.asokorea.presentation
 //			process.standardInput.writeUTFBytes(tipCommand.text + "\r");
 //		}
 
-
-
-
-
-
-
-		//--------------------------------------------------------------------------
-		//
-		// view state
-		//
-		//--------------------------------------------------------------------------
-
-
 		public static const CURRENT_STATE_CHANGED:String="currentStateChanged";
 
 		private var _currentState:String;
@@ -333,17 +321,9 @@ package com.asokorea.presentation
 			trace(Global.classInfo);
 		}
 
-		//--------------------------------------------------------------------------
-		//
-		// public methods called by its view
-		//
-		//--------------------------------------------------------------------------
-
-//		public function logout() : void 
-//		{
-//			dispatcher.dispatchEvent( new LoginEvent( LoginEvent.LOGOUT ) );
-//		}
-//		
-
+		public function addNewTask():void
+		{
+			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.ADD));
+		}
 	}
 }

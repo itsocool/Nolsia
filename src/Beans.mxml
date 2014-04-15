@@ -27,7 +27,7 @@
 	<supportclass:FileReader xmlns:supportclass="com.asokorea.supportclass.*" />
 
 	<controller:AppController xmlns:controller="com.asokorea.controller.*" />
-
+	<controller:TaskController xmlns:controller="com.asokorea.controller.*" />
 
 	<model:NavigationModel id="navModel" xmlns:model="com.asokorea.model.*" />
 

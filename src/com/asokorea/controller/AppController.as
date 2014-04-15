@@ -94,7 +94,7 @@ package com.asokorea.controller
 
 			appModel.appName=appXml.ns::name.toString();
 			appModel.appVersionLabel=appXml.ns::versionLabel[0].toString();
-			navModel.MAIN_CURRENT_SATAE=MainCurrentState.OPEN;
+			navModel.MAIN_CURRENT_SATAE=MainCurrentState.FIRST;
 
 			trace(Global.classInfo);
 		}

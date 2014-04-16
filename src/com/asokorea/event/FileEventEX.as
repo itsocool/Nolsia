@@ -8,6 +8,7 @@ package com.asokorea.event
 	public class FileEventEX extends FileEvent
 	{
 		static public const HOSTLIST_FILE_BROWSE:String = "hostListFileBrowse";
+		static public const HOSTLIST_FILE_LOAD:String = "hostListFileLoad";
 		
 		public function FileEventEX(type:String, file:File=null)
 		{

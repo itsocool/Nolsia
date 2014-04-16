@@ -107,12 +107,30 @@ package com.asokorea.controller
 			appModel.hostFile.browseForOpen("Select Host List", appModel.hostFileTypeFilter);
 		}
 
+		[EventHandler(event="FileEventEX.HOSTLIST_FILE_LOAD")]
+		public function loadHostList(event:FileEventEX):void
+		{
+			trace("FileEventEX.HOSTLIST_FILE_LOAD");
+			getHostList(event.file);
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
+		}
+
 		protected function onSelectHostList(event:Event):void
 		{
 			if (appModel.hostFile && appModel.hostFile.exists && !appModel.hostFile.isDirectory)
 			{
-				so.setString("DefaultHostPath", appModel.hostFile.nativePath);
-				getHostList(appModel.hostFile);
+				appModel.availableHostFile = true;
+				appModel.hostFilePath = appModel.hostFile.nativePath;
+				
+				if(navModel.MAIN_CURRENT_SATAE != NavigationModel.MAIN_FIRST)
+				{
+					getHostList(appModel.hostFile);				
+				}
+				
+			}else
+			{
+				appModel.availableHostFile = false;
+				appModel.hostFilePath = ""
 			}
 		}
 
@@ -204,6 +222,7 @@ package com.asokorea.controller
 					}
 				}
 				appModel.hostList = hostList;
+				Alert.show("Host List Load Complete");
 			}
 
 			if(excel2xml)

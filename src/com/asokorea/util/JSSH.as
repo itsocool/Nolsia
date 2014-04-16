@@ -1,5 +1,6 @@
 package com.asokorea.util
 {
+	import com.asokorea.event.SSHEvent;
 	import com.asokorea.model.vo.HostVo;
 	
 	import flash.desktop.NativeProcess;
@@ -14,6 +15,8 @@ package com.asokorea.util
 	[Event(name="init", type="flash.events.Event")]
 	[Event(name="complete", type="flash.events.Event")]
 	[Event(name="standardErrorClose", type="flash.events.Event")]
+	[Event(name="ouput", type="flash.events.Event")]
+	[Event(name="error", type="flash.events.Event")]
 	[Event(name="notFoundJava", type="flash.events.Event")]
 	public class JSSH extends EventDispatcher
 	{
@@ -52,7 +55,7 @@ package com.asokorea.util
 		public function init(vo:HostVo):void
 		{
 			this.vo = vo;
-			this.cmdFile = File.applicationDirectory.resolvePath("./assets/bin/JSSH.cmd");
+			this.cmdFile = File.applicationDirectory.resolvePath("./JSSH.cmd");
 			dispatchEvent(new Event(Event.INIT, true));
 		}
 		
@@ -83,6 +86,7 @@ package com.asokorea.util
 				if(process.standardOutput && process.standardOutput.bytesAvailable)
 				{
 					_output += process.standardOutput.readMultiByte(process.standardOutput.bytesAvailable,consoleEncoding);
+					dispatchEvent(new Event("output", _output));
 				}
 				
 				if(_output && _output.indexOf(NOT_FOUND_JAVA) > -1)
@@ -98,6 +102,7 @@ package com.asokorea.util
 				if(process.standardError && process.standardError.bytesAvailable)
 				{
 					_error += process.standardError.readMultiByte(process.standardError.bytesAvailable,consoleEncoding);
+					dispatchEvent(new Event("error", _error));
 				}
 				
 				if(_error && _error.indexOf(NOT_FOUND_JAVA) > -1)

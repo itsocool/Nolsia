@@ -2,9 +2,9 @@ package com.asokorea.model
 {
 	import flash.filesystem.File;
 	import flash.net.FileFilter;
-
+	
 	import mx.collections.ArrayCollection;
-
+	
 	import org.swizframework.storage.SharedObjectBean;
 
 	public class AppModel
@@ -17,6 +17,9 @@ package com.asokorea.model
 
 		[Bindable]
 		public var hostFile:File;
+
+		[Bindable]
+		public var hostFilePath:String;
 
 		[Bindable]
 		public var logDir:File;
@@ -35,6 +38,8 @@ package com.asokorea.model
 
 		[Bindable]
 		public var lastTaskId:String;
-
+		
+		[Bindable]
+		public var availableHostFile:Boolean;
 	}
 }

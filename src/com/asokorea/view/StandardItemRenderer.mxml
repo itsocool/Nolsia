@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:MXDataGridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+						  xmlns:s="library://ns.adobe.com/flex/spark" 
+						  xmlns:mx="library://ns.adobe.com/flex/mx" 
+						  focusEnabled="true">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.asokorea.model.vo.HostVo;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.DataGrid;
+			protected function onClick(event:MouseEvent):void
+			{
+				var grid:DataGrid = listData.owner as DataGrid;
+				
+				if(grid is DataGrid)
+				{
+					var list:ArrayCollection = grid.dataProvider as ArrayCollection;
+					
+					if(list is ArrayCollection)
+					{
+						for each (var host:HostVo in list) 
+						{
+							if(data is HostVo && host.no == data.no)
+							{
+								data.isDefault = true;
+								chkStanard.selected = true;
+								trace(host.no, true);
+							}else{
+								host.isDefault = false;
+								trace(host.no, false);
+							}
+						}
+						
+						grid.validateNow();
+						list.refresh();
+					}
+				}
+			}
+		]]>
+	</fx:Script>
+	
+	<mx:CheckBox id="chkStanard" verticalCenter="0" horizontalCenter="0" click="onClick(event)" selected="{data.isDefault}" />
+</s:MXDataGridItemRenderer>

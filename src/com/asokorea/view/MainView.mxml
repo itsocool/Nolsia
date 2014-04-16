@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:mx="library://ns.adobe.com/flex/mx"
-		 width="100%" height="100%" currentState="{ model.currentState }" >
+				   xmlns:tabs="com.asokorea.view.tabs.*" xmlns:panels="com.asokorea.view.panels.*" currentState="{ model.currentState }" >
 	<fx:Script>
 		<![CDATA[
 			import com.asokorea.model.enum.ExportFormat;
@@ -9,12 +9,32 @@
 			import com.asokorea.presentation.MainViewPresentationModel;
 			import com.asokorea.supportclass.FileItemVO;
 			
+			import mx.controls.CheckBox;
 			import mx.events.FlexEvent;
 
 			[Bindable]
 			[Inject]
 			public var model:MainViewPresentationModel;
 
+			[Bindable]
+			public var position:int = 0;
+			
+			protected function onChange(event:Event):void
+			{
+				if(chkFixSameLine.selected)
+				{
+					position = txtOutput.scroller.verticalScrollBar.value;
+				}
+			}
+			
+			protected function txtOutput_valueCommitHandler(event:FlexEvent):void
+			{
+				if(chkFixSameLine.selected)
+				{
+					txtOutput.scroller.verticalScrollBar.value = position;
+				}
+			}
+			
 		]]>
 	</fx:Script>
 	<s:states>
@@ -22,17 +42,27 @@
 		<s:State name="OPEN" />
 		<s:State name="SELECTED" />
 	</s:states>
-	<s:layout>
-		<s:BasicLayout />
-	</s:layout>
 
 	<!-- Background Label -->
 	<s:Label includeIn="FIRST" fontSize="120" fontWeight="bold" horizontalCenter="0" rotationZ="27"
 			 text="{model.appModel.appName} {model.appModel.appVersionLabel}" textAlpha="0.5" verticalCenter="0" />
+	<s:BorderContainer includeIn="FIRST" borderAlpha="0.75" borderWeight="4" cornerRadius="8"
+					   dropShadowVisible="true" horizontalCenter="0" verticalCenter="0">
+		<s:layout>
+			<s:VerticalLayout gap="8" horizontalAlign="center" paddingBottom="16" paddingLeft="16"
+								paddingRight="16" paddingTop="16" verticalAlign="middle"/>
+		</s:layout>
+		<mx:Label text="호스트 리스트 파일 선택" />
+		<s:HGroup gap="8" horizontalAlign="center">
+			<mx:TextInput width="500" editable="false" text="{model.appModel.hostFilePath}" />
+			<mx:Button label="선택" click="model.browseHostList()"/>
+			<mx:Button label="열기" enabled="{model.appModel.availableHostFile}" click="model.loadHostList()"/>
+		</s:HGroup>
+	</s:BorderContainer>
 	<!-- Background Label -->
 
 	<!-- Task Pop up  -->
-	<s:BorderContainer includeIn="FIRST" width="425" height="500" horizontalCenter="0" verticalCenter="0" cornerRadius="10"
+	<!--<s:BorderContainer includeIn="FIRST" width="425" height="500" horizontalCenter="0" verticalCenter="0" cornerRadius="10"
 					   alpha=".75" borderWeight="10" borderColor="#D5E3E5" borderAlpha=".7" dropShadowVisible="true">
 		<s:layout>
 			<s:VerticalLayout paddingLeft="10" paddingTop="10" paddingRight="10" paddingBottom="10" />
@@ -45,54 +75,77 @@
 		</s:HGroup>
 		<s:List id="listConnections" dataProvider="{model.appModel.settings}" labelField="name" width="100%" height="100%">
 		</s:List>
-	</s:BorderContainer>
+	</s:BorderContainer>-->
 	<!-- Task Pop up  -->
 
-	<s:HGroup width="100%" height="100%">
-		<s:VGroup includeIn="OPEN,SELECTED" width="100%" height="100%">
-			<s:Button id="btnReadHost" click="model.browseHostList()" label="1. Host List Read" />
-			<s:Button id="btnLoopHost" click="model.start(model.appModel.hostList)" label="Host Loop" enabled="{!!model.appModel.hostList}" />
-			<s:TextInput id="tipPath" width="100%" editable="false" text="{model.reader.selectedLogPath}" />
-			<s:HGroup>
-				<s:Button label="Log Open 로그 오픈" click="model.selectLogDir()" fontSize="20" fontWeight="normal" />
-				<s:Button label="Log 읽기" click="model.readLog(ddlExt.selectedItem)" fontFamily="NanumGothicCFF" fontSize="20"
-						  fontWeight="normal" />
-				<s:Button click="model.save(ExportFormat.HTML)" label="3. Save Html" enabled="{!!model.reader.fileList}" />
-				<!--			<s:Button includeIn="OPEN" label="단추" click="button4_clickHandler(event)" />
-							<s:TextInput id="tipCommand" />
-							<s:Button includeIn="OPEN" label="전송" click="button5_clickHandler(event)" />-->
-			</s:HGroup>
-			<s:DropDownList id="ddlExt" requireSelection="true" change="model.filterChange(ddlExt.selectedItem)" labelField="extension">
-				<s:dataProvider>
-					<s:ArrayCollection source="{model.appModel.fileFilters}" />
-				</s:dataProvider>
-			</s:DropDownList>
-
-			<s:HGroup>
-				<s:Label text="{model.reader.allFilesCount}" />
-				<s:Label text="/" />
-				<s:Label text="{model.reader.fileList.length}" />
-				<s:Label text="/" />
-				<s:Label text="{model.reader.readCount}" id="lblReadCount" />
-				<s:Label text="(All/Target/Done)" />
-			</s:HGroup>
-			<s:DataGrid id="dg" height="100%" dataProvider="{model.appModel.hostList}">
-				<s:columns>
-					<s:ArrayList>
-						<s:GridColumn dataField="no" headerText="No" width="40" />
-						<s:GridColumn dataField="hostName" headerText="Host" width="100" />
-						<s:GridColumn dataField="loginId" headerText="id" width="80" />
-						<s:GridColumn dataField="password" headerText="password" width="80" />
-						<s:GridColumn dataField="onLine" headerText="onLine" width="80" />
-						<s:GridColumn dataField="label" headerText="label" width="500" />
-					</s:ArrayList>
-				</s:columns>
-			</s:DataGrid>
-		</s:VGroup>
-		<s:VGroup includeIn="OPEN,SELECTED" width="100%" height="100%">
-			<s:TextArea id="txtLog" includeIn="OPEN" width="100%" height="250" />
-			<s:TextArea id="txtErrot" includeIn="OPEN" width="100%" height="250" text="{HostVo(dg.selectedItem).label}" />
-			<s:List dataProvider="{HostVo(dg.selectedItem).userList}" width="100%" height="100%" />
-		</s:VGroup>
-	</s:HGroup>
+	<!--main view-->
+	<s:BorderContainer includeIn="OPEN" id="drushArea" cornerRadius="8" left="10" top="10" right="10" bottom="10">
+		<s:layout>
+			<s:VerticalLayout />
+		</s:layout>
+		
+		<mx:HDividedBox width="100%" height="100%">
+			<mx:TabNavigator width="75%" height="100%" paddingBottom="5" paddingLeft="5"
+							 paddingRight="5" paddingTop="5"
+							 width.OPEN="50%">
+				<s:NavigatorContent label="Host user check">
+					<s:layout>
+						<s:VerticalLayout />
+					</s:layout>
+					<s:HGroup verticalAlign="middle" width="100%">
+						<mx:Button icon="{Icons.SERVER_GO}" id="btnExecuteLoop" label="Execute" click="model.start()" />
+						<mx:Button icon="{Icons.STOP}" id="btnStopLoop" label="Stop" enabled="false" />
+						<mx:Spacer width="100%"/>
+						<!--
+						<s:Label text="Clear cache:"/>
+						<s:ComboBox labelField="label" id="cmbCache" selectedIndex="0" >
+						<s:dataProvider>
+						<s:ArrayCollection>
+						<fx:Object cmd="all" label="All"/>
+						<fx:Object cmd="theme" label="Theme"/>
+						<fx:Object cmd="menu" label="Menu"/>
+						<fx:Object cmd="css+js" label="CSS+JS"/>
+						<fx:Object cmd="block" label="Block"/>
+						</s:ArrayCollection>
+						</s:dataProvider>
+						</s:ComboBox>
+						-->
+						<mx:Button icon="{Icons.DISK}" label="Open Host List" id="btnHostListOpen" click="model.browseHostList()"/>
+						<mx:Button icon="{Icons.ARROW_REFRESH}" id="btnRefresh" label="Refresh Host List"/>
+					</s:HGroup>
+					
+					<mx:DataGrid id="dg" dataProvider="{model.appModel.hostList}" width="100%" height="100%">
+						<mx:columns>
+							<mx:DataGridColumn dataField="no" headerText="No" width="40" />
+							<mx:DataGridColumn dataField="hostName" headerText="Host" width="100" />
+							<mx:DataGridColumn dataField="onLine" headerText="onLine" width="80"/>
+							<mx:DataGridColumn dataField="isDefault" headerText="Stanard" itemRenderer="com.asokorea.view.StandardItemRenderer"/>
+						</mx:columns>
+					</mx:DataGrid>
+				</s:NavigatorContent>
+			</mx:TabNavigator>	
+			<mx:VDividedBox width="100%" height="100%"
+							width.OPEN="50%">
+				<s:VGroup width="100%" height="75%">
+					<s:HGroup width="100%">
+						<!--<s:Label id="lblName" fontSize="18" fontWeight="bold" text="Test task"/>-->
+						<mx:Spacer width="100%"/>
+						<mx:CheckBox id="chkFixSameLine" change="onChange(event)" selected="true" />
+						<mx:LinkButton textAlign="right" id="btnOpenSettings" icon="{Icons.WRENCH}" label="Settings" enabled="false"/>
+						<mx:LinkButton textAlign="right" icon="{Icons.HELP}" label="Help" enabled="false"/>
+						<mx:LinkButton id="btnClose"  textAlign="right" icon="{Icons.CANCEL}" label="Close Connection" enabled="false"/>
+					</s:HGroup>
+					<s:TextArea id="txtOutput" includeIn="OPEN" width="100%" height="100%"
+								paddingBottom="8" paddingLeft="8" paddingRight="8" paddingTop="8"
+								text="{HostVo(dg.selectedItem).label}">
+					</s:TextArea>
+				</s:VGroup>
+				<panels:TerminalPanel width="100%" height="25%" />
+			</mx:VDividedBox>
+		</mx:HDividedBox>
+		
+	</s:BorderContainer>
+	
+	<!--main view-->
+	
 </s:Group>

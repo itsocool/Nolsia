@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%">
+	<fx:Script>
+		<![CDATA[
+			import com.asokorea.model.enum.Icons;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			
+			[Bindable]
+			public var statusCollection:ArrayCollection;
+
+		]]>
+	</fx:Script>
+	<s:HGroup verticalAlign="middle" width="100%">
+		<mx:Button icon="{Icons.ARROW_REFRESH}" id="btnRefresh" label="Refresh Status"/>
+		<mx:Button icon="{Icons.CLOCK}" id="btnCron" label="Run Cron" />
+		<s:Label text="Clear cache:"/>
+		<s:ComboBox labelField="label" id="cmbCache" selectedIndex="0" >
+			<s:dataProvider>
+				<s:ArrayCollection>
+					<fx:Object cmd="all" label="All"/>
+					<fx:Object cmd="theme" label="Theme"/>
+					<fx:Object cmd="menu" label="Menu"/>
+					<fx:Object cmd="css+js" label="CSS+JS"/>
+					<fx:Object cmd="block" label="Block"/>
+				</s:ArrayCollection>
+			</s:dataProvider>
+		</s:ComboBox>
+		<mx:Button label="Go" id="btnClearCache" width="36"/>
+	</s:HGroup>
+	
+		<mx:DataGrid dataProvider="{statusCollection}" width="100%" height="100%">
+			<mx:columns>
+				<mx:DataGridColumn width="0.25" headerText="Status" dataField="name"/>
+				<mx:DataGridColumn width="0.75" headerText="Information" dataField="info"/>
+			</mx:columns>
+		</mx:DataGrid>
+		
+	
+</s:VGroup>

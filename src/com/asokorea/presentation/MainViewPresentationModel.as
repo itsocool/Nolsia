@@ -19,6 +19,14 @@ package com.asokorea.presentation
 	
 	import mx.collections.ArrayCollection;
 	
+	/**
+	 * 
+	 * @author developer
+	 */
+	/**
+	 * 
+	 * @author developer
+	 */
 	public class MainViewPresentationModel extends EventDispatcher
 	{
 		[Dispatcher]
@@ -31,11 +39,16 @@ package com.asokorea.presentation
 		[Bindable]
 		[Inject]
 		public var reader:FileReader;
-
+		
 		public function browseHostList():void
 		{
-			Global.log("host ");
 			var e:FileEventEX = new FileEventEX(FileEventEX.HOSTLIST_FILE_BROWSE, appModel.hostFile);
+			dispatcher.dispatchEvent(e);
+		}
+		
+		public function loadHostList():void
+		{
+			var e:FileEventEX = new FileEventEX(FileEventEX.HOSTLIST_FILE_LOAD, appModel.hostFile);
 			dispatcher.dispatchEvent(e);
 		}
 		
@@ -61,9 +74,9 @@ package com.asokorea.presentation
 			reader.filtering(filter);
 		}
 		
-		public function start(list:ArrayCollection):void
+		public function start():void
 		{
-			dispatcher.dispatchEvent(new LoopEvent(LoopEvent.DO_LOOP, list));
+			dispatcher.dispatchEvent(new LoopEvent(LoopEvent.DO_LOOP, appModel.hostList));
 		}
 		
 //		protected function onPreinitialize(event:FlexEvent):void

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%" gap="0" contentBackgroundColor="#000000">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.asokorea.model.enum.Icons;
+			import flash.net.navigateToURL;
+			
+			protected function txtAddressBar_keyUpHandler(event:KeyboardEvent):void
+			{
+				if(event.keyCode == Keyboard.ENTER){
+					if(txtAddressBar.text.substr(0,7)!="http://" && 
+					   txtAddressBar.text.substr(0,8) != "https://") txtAddressBar.text = "http://" + txtAddressBar.text; //Prepend http://
+					browser.location = txtAddressBar.text;
+				}	
+			}
+
+
+			protected function btnOpen_clickHandler(event:MouseEvent):void
+			{
+				navigateToURL(new URLRequest(browser.location));
+			}
+
+
+			protected function browser_locationChangeHandler(event:Event):void
+			{
+				txtAddressBar.text = browser.location;
+			}
+
+		]]>
+	</fx:Script>
+	<s:BorderContainer width="100%" height="30" contentBackgroundColor="#cccccc" contentBackgroundAlpha="0.8" borderColor="#D3D3D3" backgroundColor="#E9E9E9" cornerRadius="4" backgroundAlpha="1.0">
+		<s:layout>
+			<s:HorizontalLayout paddingLeft="10" paddingRight="10"  verticalAlign="middle"  gap="10"/>
+		</s:layout>
+		<mx:Image click="{browser.historyBack();}" id="btnBack" buttonMode="true" source="{Icons.ARROW_LEFT}" toolTip="Back" width="16" height="16"/>
+		<mx:Image click="{browser.historyForward();}" id="btnForward" buttonMode="true" source="{Icons.ARROW_RIGHT}" toolTip="Forward" width="16" height="16"/>
+		<s:TextInput width="100%" text="{browser.location}" id="txtAddressBar" keyUp="txtAddressBar_keyUpHandler(event)"  contentBackgroundColor="#FFFFFF"/>
+		<mx:Button label="Go" click="{browser.location = txtAddressBar.text}" paddingLeft="0" paddingRight="0" width="26"/>
+		<mx:Image click="{browser.reload();}" id="btnRefresh" buttonMode="true" source="{Icons.ARROW_REFRESH}" toolTip="Refresh" width="16" height="16"/>
+		<mx:Image click="{browser.cancelLoad();}" id="btnStop" buttonMode="true" source="{Icons.STOP}" toolTip="Stop" width="16" height="16"/>
+		<mx:Image click="btnOpen_clickHandler(event)" id="btnOpen" buttonMode="true" source="{Icons.PAGE_WHITE_GO}" toolTip="Open in default browser"  height="16" width="16"/>
+	</s:BorderContainer>
+	<mx:HTML locationChange="browser_locationChangeHandler(event)" id="browser" width="100%" height="100%" borderStyle="solid" borderColor="#CCCCCC" borderVisible="true"/>
+</s:VGroup>

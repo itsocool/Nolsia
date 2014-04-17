@@ -5,6 +5,7 @@ package com.asokorea.util
 	
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
+	import flash.events.DataEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
@@ -15,8 +16,8 @@ package com.asokorea.util
 	[Event(name="init", type="flash.events.Event")]
 	[Event(name="complete", type="flash.events.Event")]
 	[Event(name="standardErrorClose", type="flash.events.Event")]
-	[Event(name="ouput", type="flash.events.Event")]
-	[Event(name="error", type="flash.events.Event")]
+	[Event(name="ouputData", type="flash.events.DataEvent")]
+	[Event(name="errorData", type="flash.events.DataEvent")]
 	[Event(name="notFoundJava", type="flash.events.Event")]
 	public class JSSH extends EventDispatcher
 	{
@@ -63,7 +64,7 @@ package com.asokorea.util
 		{
 			var nativeProcessStartupInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			var processArgs:Vector.<String>=new Vector.<String>();
-			processArgs.push(vo.hostName);
+			processArgs.push(vo.ip);
 			processArgs.push(vo.loginId);
 			processArgs.push(vo.password);
 			processArgs.push(vo.port.toString());
@@ -83,26 +84,30 @@ package com.asokorea.util
 		{
 			if(process && process.running){				
 				
+				var str:String = "";
+				
 				if(process.standardOutput && process.standardOutput.bytesAvailable)
 				{
-					_output += process.standardOutput.readMultiByte(process.standardOutput.bytesAvailable,consoleEncoding);
-					dispatchEvent(new Event("output", _output));
-				}
-				
-				if(_output && _output.indexOf(NOT_FOUND_JAVA) > -1)
-				{
-					dispatchEvent(new Event("notFoundJava"));
+					str = process.standardOutput.readMultiByte(process.standardOutput.bytesAvailable,consoleEncoding);
+					_output += str;
+					trace("OUTPUT : " + str);
+					dispatchEvent(new DataEvent("outputData", true, true, str));
 				}
 			}
 		}
 		
 		protected function onErrorData(event:ProgressEvent):void
 		{
-			if(process && process.running){				
+			if(process && process.running){
+				
+				var str:String = "";
+				
 				if(process.standardError && process.standardError.bytesAvailable)
 				{
-					_error += process.standardError.readMultiByte(process.standardError.bytesAvailable,consoleEncoding);
-					dispatchEvent(new Event("error", _error));
+					str = process.standardError.readMultiByte(process.standardError.bytesAvailable,consoleEncoding);
+					_error += str;
+					trace("ERROR : " + str);
+					dispatchEvent(new DataEvent("errorData", true, true, str));
 				}
 				
 				if(_error && _error.indexOf(NOT_FOUND_JAVA) > -1)
@@ -114,8 +119,8 @@ package com.asokorea.util
 		
 		protected function onExit(event:NativeProcessExitEvent):void
 		{
-			trace("output = ",output);
-			trace("error = ",error);
+			trace("last output = ",output);
+			trace("last error = ",error);
 			process.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
 			process.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
 			process.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onIOErrorData);

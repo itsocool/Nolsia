@@ -8,6 +8,7 @@ package com.asokorea.model.vo
 	public class HostVo
 	{
 		public var no:uint;
+		public var ip:String;
 		public var hostName:String;
 		public var label:String;
 		public var loginId:String;

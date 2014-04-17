@@ -9,7 +9,7 @@
 			import com.asokorea.presentation.MainViewPresentationModel;
 			import com.asokorea.supportclass.FileItemVO;
 			
-			import mx.controls.CheckBox;
+			import mx.collections.IList;
 			import mx.events.FlexEvent;
 
 			[Bindable]
@@ -23,7 +23,7 @@
 			{
 				if(chkFixSameLine.selected)
 				{
-					position = txtOutput.scroller.verticalScrollBar.value;
+//					position = txtOutput.scroller.verticalScrollBar.value;
 				}
 			}
 			
@@ -31,8 +31,20 @@
 			{
 				if(chkFixSameLine.selected)
 				{
-					txtOutput.scroller.verticalScrollBar.value = position;
+//					txtOutput.scroller.verticalScrollBar.value = position;
 				}
+			}
+			
+			protected function userCountFunc(item:Object, column:DataGridColumn):String
+			{
+				var result:String = null;
+				
+				if(item["userList"] is IList)
+				{
+					result = IList(item["userList"]).length.toString();
+				}
+				
+				return result; 
 			}
 			
 		]]>
@@ -46,17 +58,18 @@
 	<!-- Background Label -->
 	<s:Label includeIn="FIRST" fontSize="120" fontWeight="bold" horizontalCenter="0" rotationZ="27"
 			 text="{model.appModel.appName} {model.appModel.appVersionLabel}" textAlpha="0.5" verticalCenter="0" />
-	<s:BorderContainer includeIn="FIRST" borderAlpha="0.75" borderWeight="4" cornerRadius="8"
-					   dropShadowVisible="true" horizontalCenter="0" verticalCenter="0">
+	<s:BorderContainer includeIn="FIRST" backgroundAlpha="0.75" borderAlpha="0.75" borderWeight="4"
+					   cornerRadius="8" dropShadowVisible="true" horizontalCenter="0"
+					   verticalCenter="0">
 		<s:layout>
 			<s:VerticalLayout gap="8" horizontalAlign="center" paddingBottom="16" paddingLeft="16"
 								paddingRight="16" paddingTop="16" verticalAlign="middle"/>
 		</s:layout>
 		<mx:Label text="호스트 리스트 파일 선택" />
 		<s:HGroup gap="8" horizontalAlign="center">
-			<mx:TextInput width="500" editable="false" text="{model.appModel.hostFilePath}" />
-			<mx:Button label="선택" click="model.browseHostList()"/>
-			<mx:Button label="열기" enabled="{model.appModel.availableHostFile}" click="model.loadHostList()"/>
+			<mx:TextInput id="txiDir" width="500" editable="false" text="{model.appModel.hostFilePath}" />
+			<mx:Button label="선택" click="model.browseHostList()" enabled="{!model.appModel.availableHostFile}"/>
+			<mx:Button label="열기" enabled="{model.appModel.availableHostFile}" click="model.loadHostList()" />
 		</s:HGroup>
 	</s:BorderContainer>
 	<!-- Background Label -->
@@ -96,29 +109,17 @@
 						<mx:Button icon="{Icons.SERVER_GO}" id="btnExecuteLoop" label="Execute" click="model.start()" />
 						<mx:Button icon="{Icons.STOP}" id="btnStopLoop" label="Stop" enabled="false" />
 						<mx:Spacer width="100%"/>
-						<!--
-						<s:Label text="Clear cache:"/>
-						<s:ComboBox labelField="label" id="cmbCache" selectedIndex="0" >
-						<s:dataProvider>
-						<s:ArrayCollection>
-						<fx:Object cmd="all" label="All"/>
-						<fx:Object cmd="theme" label="Theme"/>
-						<fx:Object cmd="menu" label="Menu"/>
-						<fx:Object cmd="css+js" label="CSS+JS"/>
-						<fx:Object cmd="block" label="Block"/>
-						</s:ArrayCollection>
-						</s:dataProvider>
-						</s:ComboBox>
-						-->
-						<mx:Button icon="{Icons.DISK}" label="Open Host List" id="btnHostListOpen" click="model.browseHostList()"/>
-						<mx:Button icon="{Icons.ARROW_REFRESH}" id="btnRefresh" label="Refresh Host List"/>
+						<mx:Button icon="{Icons.DISK}" label="Open Host List" id="btnHostListOpen" click="model.browseHostList()" enabled="false" />
+						<mx:Button icon="{Icons.ARROW_REFRESH}" id="btnRefresh" label="Refresh Host List" enabled="false" />
 					</s:HGroup>
 					
-					<mx:DataGrid id="dg" dataProvider="{model.appModel.hostList}" width="100%" height="100%">
+					<mx:DataGrid id="dgHost" dataProvider="{model.appModel.hostList}" width="100%" height="100%">
 						<mx:columns>
 							<mx:DataGridColumn dataField="no" headerText="No" width="40" />
-							<mx:DataGridColumn dataField="hostName" headerText="Host" width="100" />
+							<mx:DataGridColumn dataField="ip" headerText="ip" width="100" />
+							<mx:DataGridColumn dataField="hostName" headerText="hostName" width="170" />
 							<mx:DataGridColumn dataField="onLine" headerText="onLine" width="80"/>
+							<mx:DataGridColumn labelFunction="userCountFunc" headerText="user count" width="80" />
 							<mx:DataGridColumn dataField="isDefault" headerText="Stanard" itemRenderer="com.asokorea.view.StandardItemRenderer"/>
 						</mx:columns>
 					</mx:DataGrid>
@@ -135,12 +136,17 @@
 						<mx:LinkButton textAlign="right" icon="{Icons.HELP}" label="Help" enabled="false"/>
 						<mx:LinkButton id="btnClose"  textAlign="right" icon="{Icons.CANCEL}" label="Close Connection" enabled="false"/>
 					</s:HGroup>
-					<s:TextArea id="txtOutput" includeIn="OPEN" width="100%" height="100%"
-								paddingBottom="8" paddingLeft="8" paddingRight="8" paddingTop="8"
-								text="{HostVo(dg.selectedItem).label}">
-					</s:TextArea>
+					<mx:DataGrid id="dgUser" dataProvider="{HostVo(dgHost.selectedItem).userList}" width="100%" height="100%">
+						<mx:columns>
+							<mx:DataGridColumn dataField="no" headerText="No" width="40" />
+							<mx:DataGridColumn dataField="userName" headerText="UserName" width="100" />
+							<mx:DataGridColumn dataField="privilege" headerText="Privilege" width="100" />
+							<mx:DataGridColumn dataField="secret" headerText="Secret" width="100"/>
+							<mx:DataGridColumn dataField="hash" headerText="Hash" />
+						</mx:columns>
+					</mx:DataGrid>
 				</s:VGroup>
-				<panels:TerminalPanel width="100%" height="25%" />
+				<panels:TerminalPanel width="100%" height="50%" />
 			</mx:VDividedBox>
 		</mx:HDividedBox>
 		

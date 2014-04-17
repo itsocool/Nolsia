@@ -66,7 +66,7 @@ package com.asokorea.util
 		public function init(excelFile:File, useJar:Boolean = true):void
 		{
 			this.useJar = useJar;
-			this.cmdFile = File.applicationDirectory.resolvePath("./Excel2Xml.cmd");
+			this.cmdFile = File.applicationDirectory.resolvePath("Excel2Xml.cmd");
 			this.excelFile = excelFile;
 			dispatchEvent(new Event(Event.INIT, true));
 		}

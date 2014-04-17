@@ -6,6 +6,7 @@ package com.asokorea.controller
 	import com.asokorea.model.NavigationModel;
 	import com.asokorea.model.enum.MainCurrentState;
 	import com.asokorea.model.vo.HostVo;
+	import com.asokorea.model.vo.UserVo;
 	import com.asokorea.supportclass.FileReader;
 	import com.asokorea.util.Excel2Xml;
 	import com.asokorea.util.Global;
@@ -112,7 +113,6 @@ package com.asokorea.controller
 		{
 			trace("FileEventEX.HOSTLIST_FILE_LOAD");
 			getHostList(event.file);
-			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
 
 		protected function onSelectHostList(event:Event):void
@@ -194,14 +194,6 @@ package com.asokorea.controller
 				var hostList:ArrayCollection = new ArrayCollection;
 				
 				commandFile = "command.sh";
-//				commands.push("en");
-//				commands.push("sh clock");
-//				commands.push("ter len 0");
-//				commands.push("sh ver | in IOS");
-//				commands.push("sh ver | in WS");
-//				commands.push("sh run");
-//				commands.push("sh ver | in memory");
-//				commands.push("sh crypto key mypubkey rsa | in Key name");
 				
 				for (var i:int=0; i < xml.sheet[0].row.length(); i++)
 				{
@@ -211,7 +203,7 @@ package com.asokorea.controller
 					{
 						vo=new HostVo();
 						vo.no=i + 1;
-						vo.hostName=row.col[0].toString();
+						vo.ip=row.col[0].toString();
 						vo.loginId=row.col[1].toString();
 						vo.password=row.col[2].toString();
 						vo.port ||= 22;
@@ -230,6 +222,8 @@ package com.asokorea.controller
 				excel2xml.dispose();
 				excel2xml = null;
 			}
+			
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
 
 		public function onErrorXmlData(event:ProgressEvent):void
@@ -325,8 +319,42 @@ package com.asokorea.controller
 				ssh.removeEventListener(Event.STANDARD_ERROR_CLOSE, onErrorSSH);
 				ssh.removeEventListener("notFoundJava", noJavaHandler);				
 				
+				var str:String = ssh.output;
+				var matches:Array = null;
+				var hostName:String = null;
+				var users:ArrayCollection = null;
+				
+				if(str)
+				{
+					if((matches = ssh.output.match(/hostname .+/)) && matches.length > 0)
+					{
+						hostName = matches[0].toString().replace(/hostname /,"");
+					}
+					
+					matches = ssh.output.match(/username .+/g);
+				
+					if(matches)
+					{
+						users = new ArrayCollection();
+						
+						for (var i:int = 0; i < matches.length; i++) 
+						{
+							var user:UserVo = new UserVo();
+							var arr:Array = matches[i].split(" ");
+							user.no = i + 1;
+							user.userName = arr[1];
+							user.privilege = arr[3];
+							user.secret = arr[5]
+							user.hash = arr[6];
+							users.addItem(user);
+						}
+					}
+				}
+
+				currentItem.hostName = hostName;
 				currentItem.label = ssh.output;
 				currentItem.onLine = !!(currentItem.label);
+				currentItem.userList = users;
 
 				trace(ssh.output);
 

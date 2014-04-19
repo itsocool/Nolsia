@@ -6,10 +6,9 @@ package com.asokorea.controller
 	import com.asokorea.model.NavigationModel;
 	import com.asokorea.model.enum.MainCurrentState;
 	import com.asokorea.model.vo.HostVo;
+	import com.asokorea.model.vo.TaskVo;
 	import com.asokorea.model.vo.UserVo;
-	import com.asokorea.supportclass.FileReader;
 	import com.asokorea.util.Excel2Xml;
-	import com.asokorea.util.Global;
 	import com.asokorea.util.JSSH;
 	
 	import flash.desktop.NativeApplication;
@@ -27,16 +26,12 @@ package com.asokorea.controller
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.events.CloseEvent;
-	import mx.logging.ILogger;
-	import mx.logging.Log;
 	import mx.utils.StringUtil;
 	
 	import org.swizframework.storage.SharedObjectBean;
 
 	public class AppController
 	{
-		protected static const LOG:ILogger=Log.getLogger("AppController");
-
 		private var process:NativeProcess;
 		
 		[Inject]
@@ -44,9 +39,6 @@ package com.asokorea.controller
 
 		[Inject]
 		public var so:SharedObjectBean;
-
-		[Inject]
-		public var reader:FileReader;
 
 		[Inject]
 		public var navModel:NavigationModel;
@@ -67,70 +59,45 @@ package com.asokorea.controller
 		{
 			var appXml:XML=NativeApplication.nativeApplication.applicationDescriptor;
 			var ns:Namespace=appXml.namespace();
-			var hostPath:String=so.getString("DefaultHostPath");
-			var logPath:String=so.getString("DefaultLogPath");
-
-			var hostFile:File=(hostPath) ? new File(hostPath) : null;
-			var logDir:File=(logPath) ? new File(logPath) : File.applicationDirectory;
-
-			if (hostFile && !hostFile.isDirectory)
-			{
-				so.setString("DefaultHostPath", hostFile.nativePath);
-			}
-			else
-			{
-				hostFile=null;
-				so.setString("DefaultHostPath", null);
-			}
-
-			if (!logDir || !logDir.isDirectory)
-			{
-				logDir=File.applicationDirectory;
-			}
-
-			appModel.hostFile=hostFile;
-			appModel.logDir=logDir;
-
-			so.setString("DefaultLogPath", logDir.nativePath);
 
 			appModel.appName=appXml.ns::name.toString();
 			appModel.appVersionLabel=appXml.ns::versionLabel[0].toString();
 			navModel.MAIN_CURRENT_SATAE=MainCurrentState.FIRST;
-
-			trace(Global.classInfo);
 		}
 
 		[EventHandler(event="FileEventEX.HOSTLIST_FILE_BROWSE")]
 		public function browseHostList(event:FileEventEX):void
 		{
-			appModel.hostFile=(appModel.hostFile) ? appModel.hostFile : File.applicationDirectory;
+			appModel.hostFile = (appModel.hostFile && appModel.hostFile.exists) ? appModel.hostFile : File.userDirectory;
 			appModel.hostFile.addEventListener(Event.SELECT, onSelectHostList);
+			appModel.hostFile.addEventListener(Event.CANCEL, onCancel)
 			appModel.hostFile.browseForOpen("Select Host List", appModel.hostFileTypeFilter);
 		}
-
+		
+		protected function onCancel(event:Event):void
+		{
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
+			appModel.hostFile.removeEventListener(Event.SELECT, onSelectHostList);
+			appModel.hostFile.removeEventListener(Event.CANCEL, onCancel)
+		}
+		
 		[EventHandler(event="FileEventEX.HOSTLIST_FILE_LOAD")]
 		public function loadHostList(event:FileEventEX):void
 		{
-			trace("FileEventEX.HOSTLIST_FILE_LOAD");
 			getHostList(event.file);
 		}
 
 		protected function onSelectHostList(event:Event):void
 		{
+			appModel.hostFile.removeEventListener(Event.SELECT, onSelectHostList);
+			appModel.hostFile.removeEventListener(Event.CANCEL, onCancel)
+
 			if (appModel.hostFile && appModel.hostFile.exists && !appModel.hostFile.isDirectory)
 			{
-				appModel.availableHostFile = true;
-				appModel.hostFilePath = appModel.hostFile.nativePath;
-				
 				if(navModel.MAIN_CURRENT_SATAE != NavigationModel.MAIN_FIRST)
 				{
 					getHostList(appModel.hostFile);				
 				}
-				
-			}else
-			{
-				appModel.availableHostFile = false;
-				appModel.hostFilePath = ""
 			}
 		}
 
@@ -166,6 +133,8 @@ package com.asokorea.controller
 				ssh = null;
 			}
 			
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_FIRST;			
+			
 			Alert.show("Not Found Java\nWould you download now?","Warning", Alert.YES|Alert.NO, null, function(evt:CloseEvent):void{
 				if(evt.detail == Alert.YES)
 				{
@@ -186,6 +155,9 @@ package com.asokorea.controller
 			
 			var data:String = excel2xml.output;
 			var xml:XML = new XML(data);
+			
+			appModel.hostList = null;
+			appModel.hasHostList = false;
 			
 			if (data && StringUtil.trim(data).length > 0 && xml is XML)
 			{
@@ -209,12 +181,13 @@ package com.asokorea.controller
 						vo.port ||= 22;
 						vo.commandFile = commandFile;
 						
-						Global.log(row.toString());
 						hostList.addItem(vo);
 					}
 				}
 				appModel.hostList = hostList;
-				Alert.show("Host List Load Complete");
+				appModel.hasHostList = true;
+				appModel.selectedTask.importHostListFile = appModel.hostFile.nativePath;
+				appModel.selectedTask.saveHostListXml(xml);
 			}
 
 			if(excel2xml)
@@ -225,9 +198,10 @@ package com.asokorea.controller
 			
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
-
+		
 		public function onErrorXmlData(event:ProgressEvent):void
 		{
+			
 			var stdOut:IDataInput=process.standardError;
 			var data:String=stdOut.readMultiByte(stdOut.bytesAvailable, "EUC-KR");
 			
@@ -241,8 +215,7 @@ package com.asokorea.controller
 			
 			process = null;
 			
-			Alert.show(data);
-			trace("Got: ", data);
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
 		
 		[EventHandler( event="LoopEvent.DO_LOOP" )]

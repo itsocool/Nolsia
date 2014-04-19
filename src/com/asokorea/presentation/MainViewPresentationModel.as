@@ -6,6 +6,8 @@ package com.asokorea.presentation
 	import com.asokorea.event.LoopEvent;
 	import com.asokorea.event.TaskEvent;
 	import com.asokorea.model.AppModel;
+	import com.asokorea.model.NavigationModel;
+	import com.asokorea.model.vo.TaskVo;
 	import com.asokorea.supportclass.FileExtensionFilter;
 	import com.asokorea.supportclass.FileReader;
 	import com.asokorea.supportclass.IFilter;
@@ -18,6 +20,7 @@ package com.asokorea.presentation
 	import flash.net.FileFilter;
 	
 	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
 	
 	/**
 	 * 
@@ -38,18 +41,50 @@ package com.asokorea.presentation
 
 		[Bindable]
 		[Inject]
+		public var navModel:NavigationModel;
+
+		[Bindable]
+		[Inject]
 		public var reader:FileReader;
+		
+		public function addNewTask():void
+		{
+			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.ADD));
+		}
+		
+		public function taskOpen(task:TaskVo):void
+		{
+			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.OPEN, task));
+		}
+		
+		public function taskEdit(task:TaskVo):void
+		{
+			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.EDIT, task));
+		}
+		
+		public function taskDelete(task:TaskVo):void
+		{
+			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.DELETE, task));
+		}
 		
 		public function browseHostList():void
 		{
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_BUSY
 			var e:FileEventEX = new FileEventEX(FileEventEX.HOSTLIST_FILE_BROWSE, appModel.hostFile);
 			dispatcher.dispatchEvent(e);
 		}
 		
 		public function loadHostList():void
 		{
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_BUSY
 			var e:FileEventEX = new FileEventEX(FileEventEX.HOSTLIST_FILE_LOAD, appModel.hostFile);
 			dispatcher.dispatchEvent(e);
+		}
+		
+		public function clearHostList():void
+		{
+			appModel.hostList = null;
+			appModel.hasHostList = false;
 		}
 		
 		public function selectLogDir():void
@@ -332,11 +367,6 @@ package com.asokorea.presentation
 				this.dispatchEvent(new Event(CURRENT_STATE_CHANGED));
 			}
 			trace(Global.classInfo);
-		}
-
-		public function addNewTask():void
-		{
-			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.ADD));
 		}
 	}
 }

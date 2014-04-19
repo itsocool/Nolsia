@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:mx="library://ns.adobe.com/flex/mx"
-				   xmlns:tabs="com.asokorea.view.tabs.*" xmlns:panels="com.asokorea.view.panels.*" currentState="{ model.currentState }" >
+				   xmlns:tabs="com.asokorea.view.tabs.*" xmlns:panels="com.asokorea.view.panels.*" currentState="{ model.currentState }" xmlns:throbber="flex.util.ui.throbber.*" xmlns:util="com.asokorea.util.*" xmlns:view="com.asokorea.view.*" >
 	<fx:Script>
 		<![CDATA[
-			import com.asokorea.model.enum.ExportFormat;
+			
 			import com.asokorea.model.enum.Icons;
 			import com.asokorea.model.vo.HostVo;
 			import com.asokorea.presentation.MainViewPresentationModel;
-			import com.asokorea.supportclass.FileItemVO;
 			
 			import mx.collections.IList;
 			import mx.events.FlexEvent;
@@ -52,67 +51,44 @@
 	<s:states>
 		<s:State name="FIRST" />
 		<s:State name="OPEN" />
-		<s:State name="SELECTED" />
+		<s:State name="BUSY" />
 	</s:states>
 
 	<!-- Background Label -->
 	<s:Label includeIn="FIRST" fontSize="120" fontWeight="bold" horizontalCenter="0" rotationZ="27"
 			 text="{model.appModel.appName} {model.appModel.appVersionLabel}" textAlpha="0.5" verticalCenter="0" />
-	<s:BorderContainer includeIn="FIRST" backgroundAlpha="0.75" borderAlpha="0.75" borderWeight="4"
-					   cornerRadius="8" dropShadowVisible="true" horizontalCenter="0"
-					   verticalCenter="0">
-		<s:layout>
-			<s:VerticalLayout gap="8" horizontalAlign="center" paddingBottom="16" paddingLeft="16"
-								paddingRight="16" paddingTop="16" verticalAlign="middle"/>
-		</s:layout>
-		<mx:Label text="호스트 리스트 파일 선택" />
-		<s:HGroup gap="8" horizontalAlign="center">
-			<mx:TextInput id="txiDir" width="500" editable="false" text="{model.appModel.hostFilePath}" />
-			<mx:Button label="선택" click="model.browseHostList()" enabled="{!model.appModel.availableHostFile}"/>
-			<mx:Button label="열기" enabled="{model.appModel.availableHostFile}" click="model.loadHostList()" />
-		</s:HGroup>
-	</s:BorderContainer>
+	
 	<!-- Background Label -->
 
 	<!-- Task Pop up  -->
-	<!--<s:BorderContainer includeIn="FIRST" width="425" height="500" horizontalCenter="0" verticalCenter="0" cornerRadius="10"
-					   alpha=".75" borderWeight="10" borderColor="#D5E3E5" borderAlpha=".7" dropShadowVisible="true">
-		<s:layout>
-			<s:VerticalLayout paddingLeft="10" paddingTop="10" paddingRight="10" paddingBottom="10" />
-		</s:layout>
-		<s:HGroup width="100%">
-			<mx:Button label="Add Task" icon="{Icons.ADD}" click="model.addNewTask()" />
-			<mx:Spacer width="100%" />
-			<mx:LinkButton textAlign="right" id="btnOpenSettings" icon="{Icons.WRENCH}" label="Settings" enabled="false" />
-			<mx:LinkButton textAlign="right" icon="{Icons.HELP}" label="Help" includeInLayout="false" visible="false" />
-		</s:HGroup>
-		<s:List id="listConnections" dataProvider="{model.appModel.settings}" labelField="name" width="100%" height="100%">
-		</s:List>
-	</s:BorderContainer>-->
+	<view:TaskSetting includeIn="FIRST" dataProvider="{model.appModel.settings}" verticalCenter="0" horizontalCenter="0" />
 	<!-- Task Pop up  -->
 
 	<!--main view-->
-	<s:BorderContainer includeIn="OPEN" id="drushArea" cornerRadius="8" left="10" top="10" right="10" bottom="10">
+	<s:BorderContainer includeIn="OPEN,BUSY" id="drushArea" borderWeight="4" cornerRadius="8"
+					   left="10" top="10" right="10" bottom="10" enabled.BUSY="false">
 		<s:layout>
-			<s:VerticalLayout />
+			<s:VerticalLayout paddingBottom="6" paddingLeft="6" paddingRight="6" paddingTop="6" />
 		</s:layout>
 		
 		<mx:HDividedBox width="100%" height="100%">
-			<mx:TabNavigator width="75%" height="100%" paddingBottom="5" paddingLeft="5"
-							 paddingRight="5" paddingTop="5"
-							 width.OPEN="50%">
+			<mx:TabNavigator width="50%" height="100%" paddingBottom="5" paddingLeft="5"
+							 paddingRight="5" paddingTop="5">
 				<s:NavigatorContent label="Host user check">
 					<s:layout>
 						<s:VerticalLayout />
 					</s:layout>
 					<s:HGroup verticalAlign="middle" width="100%">
-						<mx:Button icon="{Icons.SERVER_GO}" id="btnExecuteLoop" label="Execute" click="model.start()" />
-						<mx:Button icon="{Icons.STOP}" id="btnStopLoop" label="Stop" enabled="false" />
-						<mx:Spacer width="100%"/>
-						<mx:Button icon="{Icons.DISK}" label="Open Host List" id="btnHostListOpen" click="model.browseHostList()" enabled="false" />
-						<mx:Button icon="{Icons.ARROW_REFRESH}" id="btnRefresh" label="Refresh Host List" enabled="false" />
+						<mx:TextInput id="txiHostFile" editable="false" width="100%" toolTip="{txiHostFile.text}" text="{model.appModel.selectedTask.importHostListFile}" />
 					</s:HGroup>
-					
+					<s:HGroup verticalAlign="middle" width="100%">
+						<mx:Button icon="{Icons.DISK}" label="Open" id="btnHostListOpen" click="model.browseHostList()" />
+						<mx:Button icon="{Icons.ARROW_REFRESH}" id="btnExecuteLoop" label="Refresh" click="model.loadHostList()" enabled="{!!model.appModel.hostFile}"/>
+						<mx:Button icon="{Icons.DELETE}" id="btnHostListDelete" label="Clear List" click="model.clearHostList()" enabled="{model.appModel.hasHostList}"/>
+						<mx:Spacer width="100%"/>
+						<mx:Button icon="{Icons.SERVER_GO}" id="btnStartLoop" label="Start" enabled="{model.appModel.hasHostList}" />
+						<mx:Button icon="{Icons.STOP}" id="btnStopLoop" label="Stop" enabled="{model.appModel.hasHostList}" />
+					</s:HGroup>
 					<mx:DataGrid id="dgHost" dataProvider="{model.appModel.hostList}" width="100%" height="100%">
 						<mx:columns>
 							<mx:DataGridColumn dataField="no" headerText="No" width="40" />
@@ -125,14 +101,13 @@
 					</mx:DataGrid>
 				</s:NavigatorContent>
 			</mx:TabNavigator>	
-			<mx:VDividedBox width="100%" height="100%"
-							width.OPEN="50%">
+			<mx:VDividedBox width="50%" height="100%">
 				<s:VGroup width="100%" height="75%">
 					<s:HGroup width="100%">
 						<!--<s:Label id="lblName" fontSize="18" fontWeight="bold" text="Test task"/>-->
 						<mx:Spacer width="100%"/>
 						<mx:CheckBox id="chkFixSameLine" change="onChange(event)" selected="true" />
-						<mx:LinkButton textAlign="right" id="btnOpenSettings" icon="{Icons.WRENCH}" label="Settings" enabled="false"/>
+						<mx:LinkButton textAlign="right" icon="{Icons.WRENCH}" label="Settings" enabled="false"/>
 						<mx:LinkButton textAlign="right" icon="{Icons.HELP}" label="Help" enabled="false"/>
 						<mx:LinkButton id="btnClose"  textAlign="right" icon="{Icons.CANCEL}" label="Close Connection" enabled="false"/>
 					</s:HGroup>
@@ -149,9 +124,14 @@
 				<panels:TerminalPanel width="100%" height="50%" />
 			</mx:VDividedBox>
 		</mx:HDividedBox>
-		
 	</s:BorderContainer>
 	
+	<!--main view-->
+	<s:BorderContainer includeIn="BUSY" top="90" bottom="90" left="160" right="160"
+					   borderAlpha=".7" backgroundAlpha=".7" borderWeight="10" cornerRadius="16"
+					   verticalCenter="0" horizontalCenter="0">
+		<util:Spinner size="48" verticalCenter="0" horizontalCenter="0" tickColor="#66AAFF" numTicks="18" fadeSpeed="1000" speed="1200"/>
+	</s:BorderContainer>
 	<!--main view-->
 	
 </s:Group>

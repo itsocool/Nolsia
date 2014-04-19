@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<task>
+	<taskName>_default_</taskName>
+	<description><![CDATA[Default Task]]></description>
+	<importHostListFile><![CDATA[D:\work\workspace\asokorea\Nolsia\resources\task\_default_\호스트.xlsx]]></importHostListFile>
+	<exportedHostListFile><![CDATA[D:\work\workspace\asokorea\Nolsia\resources\task\_default_\호스트.xlsx.xml]]></exportedHostListFile>>
+	<logPath><![CDATA[D:\work\workspace\asokorea\Nolsia\resources\task\_default_\logs]]></logPath>
+	<ssh>
+		<user><![CDATA[nolsia]]></user>
+		<password><![CDATA[123456]]></password>
+		<timeout>5000</timeout>
+		<autoExit>true</autoExit>
+		<commands>
+			<command><![CDATA[en]]></command>
+			<command><![CDATA[sh clock]]></command>
+			<command><![CDATA[ter len 0]]></command>
+			<command><![CDATA[sh ver | in IOS]]></command>
+			<command><![CDATA[sh ver | in WS]]></command>
+			<command><![CDATA[sh run]]></command>
+			<command><![CDATA[sh ver | in memory]]></command>
+			<command><![CDATA[sh crypto key mypubkey rsa | in Key name]]></command>
+		</commands>
+	</ssh>
+</task>

@@ -1,27 +1,32 @@
 package com.asokorea.event
 {
+	import com.asokorea.model.vo.TaskVo;
+	
 	import flash.events.Event;
 	
 	public class TaskEvent extends Event
 	{
 		static public const ADD:String = "add";
+		static public const OPEN:String = "open";
+		static public const EDIT:String = "edit";
+		static public const DELETE:String = "DELETE";
 		
-		private var _taskName:String;
+		private var _task:TaskVo;
 		
-		public function TaskEvent(type:String, taskName:String = null)
+		public function TaskEvent(type:String, task:TaskVo = null)
 		{
 			super(type, true, true);
-			_taskName = taskName;			
+			_task = task;			
 		}
 		
 		override public function clone():Event
 		{
-			return new TaskEvent(type, taskName);
+			return new TaskEvent(type, _task);
 		}
 
-		public function get taskName():String
+		public function get task():TaskVo
 		{
-			return _taskName;
+			return _task;
 		}
 	}
 }

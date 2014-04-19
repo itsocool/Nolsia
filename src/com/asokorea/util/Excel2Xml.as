@@ -89,7 +89,7 @@ package com.asokorea.util
 			}
 			
 			nativeProcessStartupInfo.executable = cmdFile;
-			nativeProcessStartupInfo.arguments=processArgs;
+			nativeProcessStartupInfo.arguments = processArgs;
 			process = new NativeProcess();
 			process.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
 			process.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);

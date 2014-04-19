@@ -1,5 +1,7 @@
 package com.asokorea.model
 {
+	import com.asokorea.model.vo.TaskVo;
+	
 	import flash.filesystem.File;
 	import flash.net.FileFilter;
 	
@@ -7,39 +9,27 @@ package com.asokorea.model
 	
 	import org.swizframework.storage.SharedObjectBean;
 
+	[Bindable]
 	public class AppModel
 	{
-		[Bindable]
 		public var appName:String;
 
-		[Bindable]
 		public var appVersionLabel:String;
 
-		[Bindable]
 		public var hostFile:File;
 
-		[Bindable]
-		public var hostFilePath:String;
-
-		[Bindable]
-		public var logDir:File;
-
-		[Bindable]
 		public var hostFileTypeFilter:Array=[new FileFilter("All File", "*.*"), new FileFilter("Excel File (*.xls;*.xlsx)", "*.xls;*.xlsx"), new FileFilter("Text File (*.txt;*.xml;*.json,*.csv)", "*.txt;*.xml;*.json,*.csv")];
 
-		[Bindable]
 		public var fileFilters:Array=[new FileFilter("All File", "*.*"), new FileFilter("Log File (*.txt;*.log)", "*.txt;*.log")];
 
-		[Bindable]
 		public var hostList:ArrayCollection;
 
-		[Bindable]
 		public var settings:ArrayCollection;
 
-		[Bindable]
-		public var lastTaskId:String;
+		public var lastTaskName:String;
 		
-		[Bindable]
-		public var availableHostFile:Boolean;
+		public var selectedTask:TaskVo;
+		
+		public var hasHostList:Boolean;
 	}
 }

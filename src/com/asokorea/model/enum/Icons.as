@@ -30,6 +30,9 @@ package com.asokorea.model.enum
 		[Embed(source="assets/icons/error.png")]
 		public static const WARNING:Class;
 
+		[Embed(source="assets/icons/folder_explore.png")]
+		public static const FOLDER_EXPLORE:Class;
+
 		[Embed(source="assets/icons/help.png")]
 		public static const HELP:Class;
 

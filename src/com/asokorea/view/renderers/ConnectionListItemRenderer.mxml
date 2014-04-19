@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				autoDrawBackground="true"
+				textAlign="center">
+	<s:layout>
+		<s:HorizontalLayout verticalAlign="middle" gap="10" paddingTop="10" paddingBottom="10" paddingLeft="10" paddingRight="10"/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import com.asokorea.model.enum.Icons;
+			
+			import mx.core.UIComponent;
+
+			protected function onClick(event:MouseEvent):void
+			{
+				var e:MouseEvent = new MouseEvent(MouseEvent.CLICK, true, true, event.localX, event.localY, event.currentTarget as InteractiveObject);
+				
+				if(e is MouseEvent)
+				{
+					event.preventDefault();
+					event.stopImmediatePropagation()
+					dispatchEvent(e);
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<mx:Image click="onClick(event)" id="btnOpen" width="16" height="16" source="{Icons.MONITOR_GO}" mouseChildren="false" buttonMode="true" />
+	<s:Label click="onClick(event)" id="btnName" width="120" toolTip="{data.taskName}" text="{data.taskName}"
+			 verticalAlign="middle" textAlign="left" fontWeight="bold" fontSize="14" />
+	<s:Label click="onClick(event)" id="btnLabel" text="{data.description}" toolTip="{data.description}" width="100%"
+			 textAlign="right" verticalAlign="middle" color="#4C4C4C" fontSize="12" fontStyle="italic"/>
+	<mx:Image click="onClick(event)" id="btnEdit" toolTip="Edit" width="16" height="16" source="{Icons.PENCIL}" mouseChildren="false" buttonMode="true" />		
+	<mx:Image click="onClick(event)" id="btnDelete" toolTip="Delete" width="16" height="16" source="{Icons.DELETE}" mouseChildren="false" buttonMode="true" />
+</s:ItemRenderer>

@@ -35,10 +35,10 @@ package com.asokorea.controller
 		[EventHandler(event="TaskEvent.OPEN")]
 		public function openTask(event:TaskEvent):void
 		{
-			LOG.debug("Open Task", event.task.taskName);
-			var task:TaskVo = event.task;
+			LOG.debug("Open Task", event.taskVo.taskName);
+			var task:TaskVo = event.taskVo;
 			var hostFile:File = new File(task.importHostListFile);
-			appModel.selectedTask = task;
+			appModel.selectedTaskVo = task;
 			appModel.hostFile = (task.importHostListFile && hostFile && hostFile.exists) ? hostFile : null;
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
@@ -46,13 +46,13 @@ package com.asokorea.controller
 		[EventHandler(event="TaskEvent.EDIT")]
 		public function editTask(event:TaskEvent):void
 		{
-			LOG.debug("Edit Task", event.task.taskName);
+			LOG.debug("Edit Task", event.taskVo.taskName);
 		}
 		
 		[EventHandler(event="TaskEvent.DELETE")]
 		public function deleteTask(event:TaskEvent):void
 		{
-			LOG.debug("Delete Task", event.task.taskName);
+			LOG.debug("Delete Task", event.taskVo.taskName);
 		}
 		
 	}

@@ -69,14 +69,12 @@ package com.asokorea.presentation
 		
 		public function browseHostList():void
 		{
-			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_BUSY
 			var e:FileEventEX = new FileEventEX(FileEventEX.HOSTLIST_FILE_BROWSE, appModel.hostFile);
 			dispatcher.dispatchEvent(e);
 		}
 		
 		public function loadHostList():void
 		{
-			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_BUSY
 			var e:FileEventEX = new FileEventEX(FileEventEX.HOSTLIST_FILE_LOAD, appModel.hostFile);
 			dispatcher.dispatchEvent(e);
 		}
@@ -111,7 +109,8 @@ package com.asokorea.presentation
 		
 		public function start():void
 		{
-			dispatcher.dispatchEvent(new LoopEvent(LoopEvent.DO_LOOP, appModel.hostList));
+			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.EXECUTE, appModel.selectedTaskVo));
+//			dispatcher.dispatchEvent(new LoopEvent(LoopEvent.DO_LOOP, appModel.hostList));
 		}
 		
 //		protected function onPreinitialize(event:FlexEvent):void

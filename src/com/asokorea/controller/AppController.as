@@ -2,13 +2,16 @@ package com.asokorea.controller
 {
 	import com.asokorea.event.FileEventEX;
 	import com.asokorea.event.LoopEvent;
+	import com.asokorea.event.TaskEvent;
 	import com.asokorea.model.AppModel;
 	import com.asokorea.model.NavigationModel;
 	import com.asokorea.model.enum.MainCurrentState;
 	import com.asokorea.model.vo.HostVo;
+	import com.asokorea.model.vo.TaskVo;
 	import com.asokorea.model.vo.UserVo;
 	import com.asokorea.util.Excel2Xml;
 	import com.asokorea.util.JSSH;
+	import com.asokorea.util.MultiSSH;
 	
 	import flash.desktop.NativeApplication;
 	import flash.desktop.NativeProcess;
@@ -66,6 +69,8 @@ package com.asokorea.controller
 		[EventHandler(event="FileEventEX.HOSTLIST_FILE_BROWSE")]
 		public function browseHostList(event:FileEventEX):void
 		{
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_BUSY;
+			
 			if(!appModel.hostFile || !appModel.hostFile.exists)
 			{
 				appModel.hostFile = File.userDirectory.resolvePath("task/_default_");
@@ -86,6 +91,7 @@ package com.asokorea.controller
 		[EventHandler(event="FileEventEX.HOSTLIST_FILE_LOAD")]
 		public function loadHostList(event:FileEventEX):void
 		{
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_BUSY;
 			getHostList(event.file);
 		}
 
@@ -185,9 +191,9 @@ package com.asokorea.controller
 				}
 				appModel.hostList = hostList;
 				appModel.hasHostList = true;
-				appModel.selectedTask.importHostListFile = appModel.hostFile.nativePath;
-				appModel.selectedTask.saveHostListXml(xml);
-				appModel.selectedTask.saveTask();
+				appModel.selectedTaskVo.importHostListFile = appModel.hostFile.nativePath;
+				appModel.selectedTaskVo.saveHostListXml(xml);
+				appModel.selectedTaskVo.saveTask();
 			}
 
 			if(excel2xml)
@@ -218,128 +224,146 @@ package com.asokorea.controller
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
 		
-		[EventHandler( event="LoopEvent.DO_LOOP" )]
-		public function doAsyncChain(event:LoopEvent) : void
+//		[EventHandler( event="LoopEvent.DO_LOOP" )]
+//		public function doAsyncChain(event:LoopEvent) : void
+//		{
+//			sdt ||= new Date();
+//			
+//			currenPosition = event.currentPosition;
+//			lastPosition = event.lastPosition;
+//
+//			if(currenPosition < lastPosition + 1)
+//			{
+//				loopStart(event);	
+//			}else{
+//				loopStop(event);
+//			}
+//		}
+		
+		[EventHandler( event="TaskEvent.EXECUTE" )]
+		public function executeTask(event:TaskEvent) : void
 		{
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_BUSY;
 			sdt ||= new Date();
 			
-			currenPosition = event.currentPosition;
-			lastPosition = event.lastPosition;
-
-			if(currenPosition < lastPosition + 1)
-			{
-				loopStart(event);	
-			}else{
-				loopStop(event);
-			}
+			var multiSSH:MultiSSH = new MultiSSH();
+			multiSSH.addEventListener(Event.COMPLETE, onExecuteComplete);
+			multiSSH.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputSSH);
+			multiSSH.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorSSH);
+			multiSSH.execute(event.taskVo);
 		}
 		
-		protected var _startupInfo:NativeProcessStartupInfo;
-		
-		private function loopStart(event:LoopEvent):void
+		protected function onExecuteComplete(event:Event):void
 		{
-			list = event.list;
-			host = event.currentItem as HostVo;
-			lastPosition = event.lastPosition;
-
-			if(ssh)
-			{
-				ssh.dispose();
-			}
-			
-			ssh = null;
-			ssh = new JSSH();
-			ssh.addEventListener(Event.COMPLETE, onOutputSSH);
-			ssh.addEventListener(Event.STANDARD_ERROR_CLOSE, onErrorSSH);
-			ssh.addEventListener("notFoundJava", noJavaHandler);
-			ssh.init(host);
-			ssh.execute();
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
 		
-		private function loopStop(event:LoopEvent):void
-		{
-			var host:HostVo = event.currentItem as HostVo;
-			var currenPosition:int = event.currentPosition;
-			var lastPosition:int = event.lastPosition;
-			var list:ArrayCollection = event.list;
-			
-			if(ssh)
-			{
-				_startupInfo = null;
-				ssh.removeEventListener(Event.COMPLETE, onOutputSSH);
-				ssh.removeEventListener(Event.STANDARD_ERROR_CLOSE, onErrorSSH);
-				ssh.removeEventListener("notFoundJava", noJavaHandler);
-				ssh.dispose();
-				ssh = null;
-			}
-			
-			trace("Exit SSH");
-			edt = new Date();
-			
-			Alert.show("Done ! " + (edt.time - sdt.time) + "ms");
-			sdt = null;
-			edt = null;
-				
-		}
+//		protected var _startupInfo:NativeProcessStartupInfo;
+//		
+//		private function loopStart(event:LoopEvent):void
+//		{
+//			list = event.list;
+//			host = event.currentItem as HostVo;
+//			lastPosition = event.lastPosition;
+//
+//			if(ssh)
+//			{
+//				ssh.dispose();
+//			}
+//			
+//			ssh = null;
+//			ssh = new JSSH();
+//			ssh.addEventListener(Event.COMPLETE, onOutputSSH);
+//			ssh.addEventListener(Event.STANDARD_ERROR_CLOSE, onErrorSSH);
+//			ssh.addEventListener("notFoundJava", noJavaHandler);
+//			ssh.init(host);
+//			ssh.execute();
+//		}
+//		
+//		private function loopStop(event:LoopEvent):void
+//		{
+//			var host:HostVo = event.currentItem as HostVo;
+//			var currenPosition:int = event.currentPosition;
+//			var lastPosition:int = event.lastPosition;
+//			var list:ArrayCollection = event.list;
+//			
+//			if(ssh)
+//			{
+//				_startupInfo = null;
+//				ssh.removeEventListener(Event.COMPLETE, onOutputSSH);
+//				ssh.removeEventListener(Event.STANDARD_ERROR_CLOSE, onErrorSSH);
+//				ssh.removeEventListener("notFoundJava", noJavaHandler);
+//				ssh.dispose();
+//				ssh = null;
+//			}
+//			
+//			trace("Exit SSH");
+//			edt = new Date();
+//			
+//			Alert.show("Done ! " + (edt.time - sdt.time) + "ms");
+//			sdt = null;
+//			edt = null;
+//				
+//		}
 		
 		protected function onOutputSSH(event:Event):void{
 
-			var out:String = "";
-			var currentItem:HostVo = list.getItemAt(currenPosition) as HostVo;
-			
-			if(ssh){
-				ssh.removeEventListener(Event.COMPLETE, onOutputSSH);
-				ssh.removeEventListener(Event.STANDARD_ERROR_CLOSE, onErrorSSH);
-				ssh.removeEventListener("notFoundJava", noJavaHandler);				
-				
-				var str:String = ssh.output;
-				var matches:Array = null;
-				var hostName:String = null;
-				var users:ArrayCollection = null;
-				
-				if(str)
-				{
-					if((matches = ssh.output.match(/hostname .+/)) && matches.length > 0)
-					{
-						hostName = matches[0].toString().replace(/hostname /,"");
-					}
-					
-					matches = ssh.output.match(/username .+/g);
-				
-					if(matches)
-					{
-						users = new ArrayCollection();
-						
-						for (var i:int = 0; i < matches.length; i++) 
-						{
-							var user:UserVo = new UserVo();
-							var arr:Array = matches[i].split(" ");
-							user.no = i + 1;
-							user.userName = arr[1];
-							user.privilege = arr[3];
-							user.secret = arr[5]
-							user.hash = arr[6];
-							users.addItem(user);
-						}
-					}
-				}
-
-				currentItem.hostName = hostName;
-				currentItem.label = ssh.output;
-				currentItem.onLine = !!(currentItem.label);
-				currentItem.userList = users;
-
-				trace(ssh.output);
-
-				if(list)
-				{
-					appModel.hostList = list;
-					appModel.hostList.refresh();
-				}
-			}
-			
-			var e:LoopEvent = new LoopEvent(LoopEvent.DO_LOOP, list, ++currenPosition);
-			doAsyncChain(e);
+//			var out:String = "";
+//			var currentItem:HostVo = list.getItemAt(currenPosition) as HostVo;
+//			
+//			if(ssh){
+//				ssh.removeEventListener(Event.COMPLETE, onOutputSSH);
+//				ssh.removeEventListener(Event.STANDARD_ERROR_CLOSE, onErrorSSH);
+//				ssh.removeEventListener("notFoundJava", noJavaHandler);				
+//				
+//				var str:String = ssh.output;
+//				var matches:Array = null;
+//				var hostName:String = null;
+//				var users:ArrayCollection = null;
+//				
+//				if(str)
+//				{
+//					if((matches = ssh.output.match(/hostname .+/)) && matches.length > 0)
+//					{
+//						hostName = matches[0].toString().replace(/hostname /,"");
+//					}
+//					
+//					matches = ssh.output.match(/username .+/g);
+//				
+//					if(matches)
+//					{
+//						users = new ArrayCollection();
+//						
+//						for (var i:int = 0; i < matches.length; i++) 
+//						{
+//							var user:UserVo = new UserVo();
+//							var arr:Array = matches[i].split(" ");
+//							user.no = i + 1;
+//							user.userName = arr[1];
+//							user.privilege = arr[3];
+//							user.secret = arr[5]
+//							user.hash = arr[6];
+//							users.addItem(user);
+//						}
+//					}
+//				}
+//
+//				currentItem.hostName = hostName;
+//				currentItem.label = ssh.output;
+//				currentItem.onLine = !!(currentItem.label);
+//				currentItem.userList = users;
+//
+//				trace(ssh.output);
+//
+//				if(list)
+//				{
+//					appModel.hostList = list;
+//					appModel.hostList.refresh();
+//				}
+//			}
+//			
+//			var e:LoopEvent = new LoopEvent(LoopEvent.DO_LOOP, list, ++currenPosition);
+//			doAsyncChain(e);
 		}
 		
 		/**
@@ -348,30 +372,30 @@ package com.asokorea.controller
 		 **/ 
 		protected function onErrorSSH(event:Event):void{
 			
-			var out:String = "";
-			var currentItem:HostVo = list.getItemAt(currenPosition) as HostVo;
-			
-			if(ssh){
-				ssh.removeEventListener(Event.COMPLETE, onOutputSSH);
-				ssh.removeEventListener(Event.STANDARD_ERROR_CLOSE, onErrorSSH);
-				ssh.removeEventListener("notFoundJava", noJavaHandler);				
-				
-				currentItem.label = ssh.error;
-				currentItem.onLine = !!(ssh.output);
-				
-				trace(ssh.error);
-				
-				if(list)
-				{
-					appModel.hostList = list;
-					appModel.hostList.refresh();
-				}
-			}			
-			
-			if(currenPosition < lastPosition + 1){
-				var nextItem:* = list.getItemAt(currenPosition + 1);
-				doAsyncChain(new LoopEvent(LoopEvent.DO_LOOP, list, nextItem));
-			}
+//			var out:String = "";
+//			var currentItem:HostVo = list.getItemAt(currenPosition) as HostVo;
+//			
+//			if(ssh){
+//				ssh.removeEventListener(Event.COMPLETE, onOutputSSH);
+//				ssh.removeEventListener(Event.STANDARD_ERROR_CLOSE, onErrorSSH);
+//				ssh.removeEventListener("notFoundJava", noJavaHandler);				
+//				
+//				currentItem.label = ssh.error;
+//				currentItem.onLine = !!(ssh.output);
+//				
+//				trace(ssh.error);
+//				
+//				if(list)
+//				{
+//					appModel.hostList = list;
+//					appModel.hostList.refresh();
+//				}
+//			}			
+//			
+//			if(currenPosition < lastPosition + 1){
+//				var nextItem:* = list.getItemAt(currenPosition + 1);
+//				doAsyncChain(new LoopEvent(LoopEvent.DO_LOOP, list, nextItem));
+//			}
 		}		
 	}
 }

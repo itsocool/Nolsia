@@ -1,23 +1,17 @@
 package com.asokorea.util
 {
-	import avmplus.USE_ITRAITS;
-	
 	import com.asokorea.model.enum.ExternalCommandType;
 	
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.events.IEventDispatcher;
 	import flash.events.IOErrorEvent;
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.net.FileFilter;
-	import flash.system.System;
 	import flash.xml.XMLDocument;
-	
-	import mx.controls.Alert;
 
 	[Event(name="init", type="flash.events.Event")]
 	[Event(name="complete", type="flash.events.Event")]

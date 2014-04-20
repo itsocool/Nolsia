@@ -20,7 +20,8 @@ package com.asokorea.model.vo
 		public var logPath:String;
 		public var ssh:SshVo;
 		public var taskBaseDir:String;
-		
+
+		private var _nativePath:String;
 		private var configXml:XML;
 		private var hostListXml:XML;
 		
@@ -39,6 +40,11 @@ package com.asokorea.model.vo
 			_taskName = value;
 		}
 
+		public function get nativePath():String
+		{
+			return _nativePath;
+		}
+
 		public function loadTask(taskName:String = null):void
 		{
 			this.taskName = taskName
@@ -53,6 +59,7 @@ package com.asokorea.model.vo
 				}
 				
 				var configXmlFile:File = File.userDirectory.resolvePath("task/" + _taskName + "/config.xml");
+				_nativePath = configXmlFile.nativePath;
 				configXml = Global.readXml(configXmlFile);
 				
 				description = configXml.description;
@@ -68,10 +75,11 @@ package com.asokorea.model.vo
 				}
 				
 				ssh = new SshVo();
-				ssh.autoExit = configXml.ssh.autoExit;
+				ssh.user = configXml.ssh.user;
 				ssh.password = configXml.ssh.password;
 				ssh.timeout = configXml.ssh.timeout;
-				ssh.user = configXml.ssh.user;
+				ssh.maxConnection = configXml.maxConnection;
+				ssh.autoExit = configXml.ssh.autoExit;
 				ssh.commands = new ArrayCollection();
 				
 				var commandList:XMLList = configXml..command;
@@ -98,6 +106,7 @@ package com.asokorea.model.vo
 				configXml.ssh.user = Global.cdata(ssh.user, "user");
 				configXml.ssh.password = Global.cdata(ssh.password, "password");
 				configXml.ssh.timeout = ssh.timeout;
+				configXml.ssh.maxConnection = ssh.maxConnection;
 				configXml.ssh.autoExit = ssh.autoExit;
 				configXml.ssh.commands = <commands/>;
 				

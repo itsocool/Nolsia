@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:mx="library://ns.adobe.com/flex/mx"
-				   xmlns:tabs="com.asokorea.view.tabs.*" xmlns:panels="com.asokorea.view.panels.*" currentState="{ model.currentState }" xmlns:throbber="flex.util.ui.throbber.*" xmlns:util="com.asokorea.util.*" xmlns:view="com.asokorea.view.*" >
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:tabs="com.asokorea.view.tabs.*"
+		 xmlns:panels="com.asokorea.view.panels.*" xmlns:throbber="flex.util.ui.throbber.*"
+		 xmlns:util="com.asokorea.util.*" xmlns:view="com.asokorea.view.*"
+		 currentState="{ model.currentState }">
 	<fx:Script>
 		<![CDATA[
 			
@@ -79,15 +82,15 @@
 						<s:VerticalLayout />
 					</s:layout>
 					<s:HGroup verticalAlign="middle" width="100%">
-						<mx:Button icon="{Icons.DISK}" label="Open" id="btnHostListOpen" click="model.browseHostList()" />
-						<mx:TextInput id="txiHostFile" editable="false" width="100%" toolTip="{txiHostFile.text}" text="{model.appModel.selectedTask.importHostListFile}" />
+						<mx:Button useHandCursor="true" icon="{Icons.DISK}" label="Open" id="btnHostListOpen" click="model.browseHostList()" />
+						<mx:TextInput id="txiHostFile" editable="false" width="100%" toolTip="{txiHostFile.text}" text="{model.appModel.selectedTaskVo.importHostListFile}" />
 					</s:HGroup>
 					<s:HGroup verticalAlign="middle" width="100%">
-						<mx:Button icon="{Icons.ARROW_REFRESH}" id="btnExecuteLoop" label="Refresh" click="model.loadHostList()" enabled="{!!model.appModel.hostFile}"/>
-						<mx:Button icon="{Icons.DELETE}" id="btnHostListDelete" label="Clear List" click="model.clearHostList()" enabled="{model.appModel.hasHostList}"/>
+						<mx:Button useHandCursor="true" icon="{Icons.ARROW_REFRESH}" id="btnExecuteLoop" label="Refresh" click="model.loadHostList()" enabled="{!!model.appModel.hostFile}"/>
+						<mx:Button useHandCursor="true" icon="{Icons.DELETE}" id="btnHostListDelete" label="Clear List" click="model.clearHostList()" enabled="{model.appModel.hasHostList}"/>
 						<mx:Spacer width="100%"/>
-						<mx:Button icon="{Icons.SERVER_GO}" id="btnStartLoop" label="Start" enabled="{model.appModel.hasHostList}" />
-						<mx:Button icon="{Icons.STOP}" id="btnStopLoop" label="Stop" enabled="{model.appModel.hasHostList}" />
+						<mx:Button useHandCursor="true" icon="{Icons.SERVER_GO}" id="btnStartLoop" click="model.start()" label="Start" enabled="{model.appModel.hasHostList}" />
+						<mx:Button useHandCursor="true" icon="{Icons.STOP}" id="btnStopLoop" label="Stop" enabled="{model.appModel.hasHostList}" />
 					</s:HGroup>
 					<mx:DataGrid id="dgHost" dataProvider="{model.appModel.hostList}" width="100%" height="100%">
 						<mx:columns>
@@ -100,8 +103,8 @@
 						</mx:columns>
 					</mx:DataGrid>
 					<s:HGroup verticalAlign="middle" width="100%">
-						<mx:Button icon="{Icons.DISK}" label="Open" id="btnLogOpen" click="model.browseHostList()" />
-						<mx:TextInput id="txiLogDir" editable="false" width="100%" toolTip="{txiLogDir.text}" text="{model.appModel.selectedTask.logPath}" />
+						<mx:Button useHandCursor="true" icon="{Icons.DISK}" label="Open" id="btnLogOpen" click="model.browseHostList()" />
+						<mx:TextInput id="txiLogDir" editable="false" width="100%" toolTip="{txiLogDir.text}" text="{model.appModel.selectedTaskVo.logPath}" />
 					</s:HGroup>
 				</s:NavigatorContent>
 			</mx:TabNavigator>	

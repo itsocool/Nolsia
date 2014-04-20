@@ -28,12 +28,10 @@ goto END
 	goto END
 	
 :SSH
-	@set taskname=%2
-	@set tmp1=%~3
-	@set tmp2=%~4
-	@set src=%tmp1:[_]= %
-	@set target=%tmp2:[_]= %
-	.\bin\jre7\bin\java -jar .\bin\MultiSSH.jar %taskname% "%src%" "%target%"
+	@set tmp=%~2
+	@set src=%tmp:[_]= %
+	@set taskname=%3
+	.\bin\jre7\bin\java -jar .\bin\MultiSSH.jar "%src%" %taskname%
 	goto END	
 	
 :END

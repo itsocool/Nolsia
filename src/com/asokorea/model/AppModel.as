@@ -29,7 +29,7 @@ package com.asokorea.model
 
 		public var lastTaskName:String;
 		
-		public var selectedTask:TaskVo;
+		public var selectedTaskVo:TaskVo;
 		
 		public var hasHostList:Boolean;
 	}

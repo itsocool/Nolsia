@@ -6,10 +6,11 @@ package com.asokorea.event
 	
 	public class TaskEvent extends Event
 	{
-		static public const ADD:String = "add";
-		static public const OPEN:String = "open";
-		static public const EDIT:String = "edit";
-		static public const DELETE:String = "DELETE";
+		public static const ADD:String = "add";
+		public static const OPEN:String = "open";
+		public static const EDIT:String = "edit";
+		public static const DELETE:String = "delete";
+		public static const EXECUTE:String = "execute";
 		
 		private var _task:TaskVo;
 		
@@ -24,7 +25,7 @@ package com.asokorea.event
 			return new TaskEvent(type, _task);
 		}
 
-		public function get task():TaskVo
+		public function get taskVo():TaskVo
 		{
 			return _task;
 		}

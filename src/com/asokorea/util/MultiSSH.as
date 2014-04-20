@@ -6,58 +6,30 @@ package com.asokorea.util
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.Event;
-	import flash.events.EventDispatcher;
-	import flash.events.IOErrorEvent;
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	
-	//	[Event(name="init", type="flash.events.Event")]
-	[Event(name="complete", type="flash.events.Event")]
-	[Event(name="standardErrorClose", type="flash.events.Event")]
 	[Event(name="notFoundJava", type="flash.events.Event")]
-	[Event(name="standardOutputData", type="flash.events.ProgressEvent")]
-	[Event(name="standardErrorData", type="flash.events.ProgressEvent")]
-	public class MultiSSH extends EventDispatcher
+	public class MultiSSH extends NativeProcess
 	{
-		static public const NOT_FOUND_JAVA:String = "[Not found java]";
+		static public const NOT_FOUND_JAVA:String = "Not found java";
 		
 		private var cmdFile:File = File.applicationDirectory.resolvePath("windows.cmd");
 		private var consoleEncoding:String = "EUC-KR";
-		private var process:NativeProcess;
 		private var _output:String = "";
 		private var _error:String = "";
+		private var _totalOutput:String = "";
+		private var _totalError:String = "";
 		
-		[Bindable]
-		public function get output():String
-		{
-			return _output;
-		}
-		
-		public function set output(value:String):void
-		{
-			_output = value;
-		}
-		
-		[Bindable]
-		public function get error():String
-		{
-			return _error;
-		}
-		
-		public function set error(value:String):void
-		{
-			_error = value;
-		}
-		
-		//		public function init(taskVo:TaskVo):void
-		//		{
-		//			this.taskVo = taskVo;
-		//			dispatchEvent(new Event(Event.INIT, true));
-		//		}
-		
+		private var _sdt:Date;
+		private var _edt:Date;
+		private var _timeSpan:int = 0;
+
 		public function execute(taskVo:TaskVo):void
 		{
+			_sdt = new Date();			
+			
 			if(taskVo is TaskVo)
 			{
 				var nativeProcessStartupInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
@@ -69,77 +41,112 @@ package com.asokorea.util
 				
 				nativeProcessStartupInfo.executable = cmdFile;
 				nativeProcessStartupInfo.arguments = processArgs;
-				process = new NativeProcess();
-				process.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
-				process.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
-				process.addEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onIOErrorData);
-				process.addEventListener(NativeProcessExitEvent.EXIT, onExit);
-				process.start(nativeProcessStartupInfo);
+				addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
+				addEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
+				addEventListener(NativeProcessExitEvent.EXIT, onExit);
+				start(nativeProcessStartupInfo);
 			}
-		}
-		
-		protected function onOutputData(event:ProgressEvent):void
-		{
-			if(process && process.running){				
-				
-				if(process.standardOutput && process.standardOutput.bytesAvailable)
-				{
-					_output += process.standardOutput.readMultiByte(process.standardOutput.bytesAvailable,consoleEncoding);
-				}
-				
-				if(_output && _output.indexOf(NOT_FOUND_JAVA) > -1)
-				{
-					dispatchEvent(new Event("notFoundJava"));
-				}
-			}
-			dispatchEvent(event.clone() as ProgressEvent);
-		}
-		
-		protected function onErrorData(event:ProgressEvent):void
-		{
-			if(process && process.running){				
-				if(process.standardError && process.standardError.bytesAvailable)
-				{
-					_error += process.standardError.readMultiByte(process.standardError.bytesAvailable,consoleEncoding);
-				}
-				
-				if(_error && _error.indexOf(NOT_FOUND_JAVA) > -1)
-				{
-					dispatchEvent(new Event("notFoundJava"));
-				}
-			}
-			dispatchEvent(event.clone() as ProgressEvent);
 		}
 		
 		protected function onExit(event:NativeProcessExitEvent):void
 		{
-			process.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
-			process.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
-			process.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onIOErrorData);
-			process.removeEventListener(NativeProcessExitEvent.EXIT, onExit);
-			dispatchEvent(new Event(Event.COMPLETE, true));
+			removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
+			removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
+			removeEventListener(NativeProcessExitEvent.EXIT, onExit);
+
+			_edt = new Date();
+			_timeSpan = int(_edt.time - _sdt.time);
 		}
 		
-		protected function onIOErrorData(event:IOErrorEvent):void
+		protected function onOutputData(event:ProgressEvent):void
 		{
-			trace(event.errorID);
-			process.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
-			process.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
-			process.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onIOErrorData);
-			process.removeEventListener(NativeProcessExitEvent.EXIT, onExit);
-			dispatchEvent(new Event(Event.STANDARD_ERROR_CLOSE));
+			if(standardOutput && standardOutput.bytesAvailable)
+			{
+				var result:String = standardOutput.readMultiByte(standardOutput.bytesAvailable,consoleEncoding);
+				_output = result;
+				_totalOutput += _output;
+			}
+		}
+		
+		protected function onErrorData(event:ProgressEvent):void
+		{
+			if(standardError && standardError.bytesAvailable)
+			{
+				var result:String = standardError.readMultiByte(standardError.bytesAvailable,consoleEncoding);
+				_error = result;
+				_totalError += _error;
+			}
+			
+			if(_error && _error.indexOf(NOT_FOUND_JAVA) > -1)
+			{
+				dispatchEvent(new Event("notFoundJava"));
+			}
 		}
 		
 		public function dispose():void
 		{
-			if(cmdFile)	cmdFile = null;
-			if(process){
-				if(process.running) process.exit(true);
-				process = null;
+			closeInput();
+
+			if(cmdFile)
+			{
+				cmdFile = null;
 			}
+
 			_output = null;
 			_error = null;
+			_totalError = null;
+			_totalOutput = null
+
+			exit(true);
 		}
 		
+		public function get timeSpan():int
+		{
+			return _timeSpan;
+		}
+		
+		public function get edt():Date
+		{
+			return _edt;
+		}
+		
+		public function get sdt():Date
+		{
+			return _sdt;
+		}
+		
+		public function get totalError():String
+		{
+			return _totalError;
+		}
+		
+		public function get totalOutput():String
+		{
+			return _totalOutput;
+		}
+		
+		[Bindable]
+		public function get output():String
+		{
+			return _output;
+		}
+		
+		protected function set output(value:String):void
+		{
+			_output = value;
+			_totalOutput += value;
+		}
+		
+		[Bindable]
+		public function get error():String
+		{
+			return _error;
+		}
+		
+		protected function set error(value:String):void
+		{
+			_error = value;
+			_totalError += value;
+		}
 	}
 }

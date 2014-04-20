@@ -65,7 +65,7 @@ package com.asokorea.util
 			var nativeProcessStartupInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			var processArgs:Vector.<String>=new Vector.<String>();
 			processArgs.push(vo.ip);
-			processArgs.push(vo.loginId);
+			processArgs.push(vo.user);
 			processArgs.push(vo.password);
 			processArgs.push(vo.port.toString());
 			processArgs.push(vo.commandFile);

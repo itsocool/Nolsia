@@ -32,5 +32,11 @@ package com.asokorea.model
 		public var selectedTaskVo:TaskVo;
 		
 		public var hasHostList:Boolean;
+		
+		public var message:String;
+		
+		public var standardOutput:String;
+		
+		public var standardError:String;
 	}
 }

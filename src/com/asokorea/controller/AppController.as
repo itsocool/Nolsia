@@ -1,28 +1,26 @@
 package com.asokorea.controller
 {
 	import com.asokorea.event.FileEventEX;
-	import com.asokorea.event.LoopEvent;
 	import com.asokorea.event.TaskEvent;
 	import com.asokorea.model.AppModel;
 	import com.asokorea.model.NavigationModel;
 	import com.asokorea.model.enum.MainCurrentState;
 	import com.asokorea.model.vo.HostVo;
 	import com.asokorea.model.vo.TaskVo;
-	import com.asokorea.model.vo.UserVo;
 	import com.asokorea.util.Excel2Xml;
-	import com.asokorea.util.JSSH;
 	import com.asokorea.util.MultiSSH;
 	
 	import flash.desktop.NativeApplication;
 	import flash.desktop.NativeProcess;
-	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.Event;
 	import flash.events.IEventDispatcher;
+	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.filesystem.FileStream;
 	import flash.net.URLRequest;
 	import flash.net.navigateToURL;
+	import flash.utils.Dictionary;
 	import flash.utils.IDataInput;
 	
 	import mx.collections.ArrayCollection;
@@ -48,12 +46,8 @@ package com.asokorea.controller
 		[Dispatcher]
 		public var dispatcher:IEventDispatcher;
 
-		private var host:HostVo = null;
-		private var currenPosition:int = -1;
-		private var lastPosition:int = -1;
-		private var list:ArrayCollection = null;
-		
-		private var ssh:JSSH;
+		private var multiSSH:MultiSSH;
+		private var hostMap:Dictionary = new Dictionary();		
 		
 		[PostConstruct]
 		public function init():void
@@ -132,18 +126,19 @@ package com.asokorea.controller
 				excel2xml = null;
 			}
 			
-			if(ssh)
+			if(multiSSH)
 			{
-				ssh.removeEventListener(Event.COMPLETE, onOutputSSH);
-				ssh.removeEventListener(Event.STANDARD_ERROR_CLOSE, onErrorSSH);
-				ssh.removeEventListener("notFoundJava", noJavaHandler);
-				ssh.dispose();
-				ssh = null;
+				multiSSH.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputSSH);
+				multiSSH.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorSSH);
+				multiSSH.removeEventListener(NativeProcessExitEvent.EXIT, onExit);
+				multiSSH.removeEventListener("notFoundJava", noJavaHandler);
+				multiSSH.dispose();
+				multiSSH = null;
 			}
 			
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_FIRST;			
 			
-			Alert.show("Not Found Java\nWould you download now?","Warning", Alert.YES|Alert.NO, null, function(evt:CloseEvent):void{
+			Alert.show("Not Found Java Runtime\nDo you want to download?","Warning", Alert.YES|Alert.NO, null, function(evt:CloseEvent):void{
 				if(evt.detail == Alert.YES)
 				{
 					navigateToURL(new URLRequest("http://java.com/download"));
@@ -151,9 +146,6 @@ package com.asokorea.controller
 				}
 			});
 		}
-		
-		private var sdt:Date;
-		private var edt:Date;
 		
 		public function onOutputXmlData(event:Event):void
 		{
@@ -163,6 +155,7 @@ package com.asokorea.controller
 			
 			var data:String = excel2xml.output;
 			var xml:XML = new XML(data);
+			var taskVo:TaskVo = appModel.selectedTaskVo;
 			
 			appModel.hostList = null;
 			appModel.hasHostList = false;
@@ -179,13 +172,13 @@ package com.asokorea.controller
 					
 					if(row && row.col && row.col[0].toString() && row.col[1].toString() && row.col[2].toString())
 					{
-						vo=new HostVo();
-						vo.no=i + 1;
-						vo.ip=row.col[0].toString();
-						vo.loginId=row.col[1].toString();
-						vo.password=row.col[2].toString();
+						vo = new HostVo();
+						vo.no = i + 1;
+						vo.ip = row.col[0].toString();
+						vo.user = row.col[1].toString() || taskVo.ssh.user;
+						vo.password = row.col[2].toString() || taskVo.ssh.password;
 						vo.port ||= 22;
-						
+						hostMap[vo.ip] = vo;
 						hostList.addItem(vo);
 					}
 				}
@@ -224,178 +217,125 @@ package com.asokorea.controller
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
 		
-//		[EventHandler( event="LoopEvent.DO_LOOP" )]
-//		public function doAsyncChain(event:LoopEvent) : void
-//		{
-//			sdt ||= new Date();
-//			
-//			currenPosition = event.currentPosition;
-//			lastPosition = event.lastPosition;
-//
-//			if(currenPosition < lastPosition + 1)
-//			{
-//				loopStart(event);	
-//			}else{
-//				loopStop(event);
-//			}
-//		}
-		
 		[EventHandler( event="TaskEvent.EXECUTE" )]
 		public function executeTask(event:TaskEvent) : void
 		{
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_BUSY;
-			sdt ||= new Date();
 			
-			var multiSSH:MultiSSH = new MultiSSH();
-			multiSSH.addEventListener(Event.COMPLETE, onExecuteComplete);
+			multiSSH = new MultiSSH();
 			multiSSH.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputSSH);
 			multiSSH.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorSSH);
+			multiSSH.addEventListener(NativeProcessExitEvent.EXIT, onExit);
+			multiSSH.addEventListener("notFoundJava", noJavaHandler);
 			multiSSH.execute(event.taskVo);
 		}
 		
-		protected function onExecuteComplete(event:Event):void
+		protected function onExit(event:NativeProcessExitEvent):void
 		{
+			multiSSH.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputSSH);
+			multiSSH.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorSSH);
+			multiSSH.removeEventListener(NativeProcessExitEvent.EXIT, onExit);
+			multiSSH.removeEventListener("notFoundJava", noJavaHandler);
+			
+			if(multiSSH)
+			{
+				multiSSH.dispose();
+			}
+			
+			multiSSH = null;
+			
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
 		
-//		protected var _startupInfo:NativeProcessStartupInfo;
-//		
-//		private function loopStart(event:LoopEvent):void
-//		{
-//			list = event.list;
-//			host = event.currentItem as HostVo;
-//			lastPosition = event.lastPosition;
-//
-//			if(ssh)
-//			{
-//				ssh.dispose();
-//			}
-//			
-//			ssh = null;
-//			ssh = new JSSH();
-//			ssh.addEventListener(Event.COMPLETE, onOutputSSH);
-//			ssh.addEventListener(Event.STANDARD_ERROR_CLOSE, onErrorSSH);
-//			ssh.addEventListener("notFoundJava", noJavaHandler);
-//			ssh.init(host);
-//			ssh.execute();
-//		}
-//		
-//		private function loopStop(event:LoopEvent):void
-//		{
-//			var host:HostVo = event.currentItem as HostVo;
-//			var currenPosition:int = event.currentPosition;
-//			var lastPosition:int = event.lastPosition;
-//			var list:ArrayCollection = event.list;
-//			
-//			if(ssh)
-//			{
-//				_startupInfo = null;
-//				ssh.removeEventListener(Event.COMPLETE, onOutputSSH);
-//				ssh.removeEventListener(Event.STANDARD_ERROR_CLOSE, onErrorSSH);
-//				ssh.removeEventListener("notFoundJava", noJavaHandler);
-//				ssh.dispose();
-//				ssh = null;
-//			}
-//			
-//			trace("Exit SSH");
-//			edt = new Date();
-//			
-//			Alert.show("Done ! " + (edt.time - sdt.time) + "ms");
-//			sdt = null;
-//			edt = null;
-//				
-//		}
-		
 		protected function onOutputSSH(event:Event):void{
+			
+			var data:String = null;
+			
+			if(multiSSH.output)
+			{
+				data = multiSSH.output;
 
+				appModel.message = data;
+				appModel.standardOutput = data;
+				
+				if(data.indexOf("[OUTPUT]") >= 0)
+				{
+					var result:Object = JSON.parse(data.replace(/\[OUTPUT\]/,""));
+					var taskVo:TaskVo = appModel.selectedTaskVo;
+					var hostVo:HostVo = hostMap[result["ip"]] as HostVo;
+
+					
+					trace("## JSON : ", result);
+					appModel.standardOutput = "[timeStamp] " + result["timeStamp"] + File.lineEnding;
+					appModel.standardOutput += "[ip] " + result["ip"] + File.lineEnding;
+					appModel.standardOutput += "[hostName] " + result["hostName"] + File.lineEnding;
+					appModel.standardOutput += "[fileName] " + result["fileName"] + File.lineEnding;
+					appModel.standardOutput += "[dataSize] " + result["dataSize"] + File.lineEnding;
+					appModel.standardOutput += "[message] " + result["message"];
+					
+						
+//					var str:String = ssh.output;
+//					var matches:Array = null;
+//					var hostName:String = null;
+//					var users:ArrayCollection = null;
+//					
+//					if(str)
+//					{
+//						if((matches = ssh.output.match(/hostname .+/)) && matches.length > 0)
+//						{
+//							hostName = matches[0].toString().replace(/hostname /,"");
+//						}
+//						
+//						matches = ssh.output.match(/username .+/g);
+//						
+//						if(matches)
+//						{
+//							users = new ArrayCollection();
+//							
+//							for (var i:int = 0; i < matches.length; i++) 
+//							{
+//								var user:UserVo = new UserVo();
+//								var arr:Array = matches[i].split(" ");
+//								user.no = i + 1;
+//								user.userName = arr[1];
+//								user.privilege = arr[3];
+//								user.secret = arr[5]
+//								user.hash = arr[6];
+//								users.addItem(user);
+//							}
+//						}
+//					}
+//					
+//					currentItem.hostName = hostName;
+//					currentItem.label = ssh.output;
+//					currentItem.onLine = !!(currentItem.label);
+//					currentItem.userList = users;
+//					
+//					trace(ssh.output);
+//					
+//					if(list)
+//					{
+//						appModel.hostList = list;
+//						appModel.hostList.refresh();
+//					}
+//					
+					
+					
+				}
+			}
+			
 //			var out:String = "";
 //			var currentItem:HostVo = list.getItemAt(currenPosition) as HostVo;
 //			
-//			if(ssh){
-//				ssh.removeEventListener(Event.COMPLETE, onOutputSSH);
-//				ssh.removeEventListener(Event.STANDARD_ERROR_CLOSE, onErrorSSH);
-//				ssh.removeEventListener("notFoundJava", noJavaHandler);				
-//				
-//				var str:String = ssh.output;
-//				var matches:Array = null;
-//				var hostName:String = null;
-//				var users:ArrayCollection = null;
-//				
-//				if(str)
-//				{
-//					if((matches = ssh.output.match(/hostname .+/)) && matches.length > 0)
-//					{
-//						hostName = matches[0].toString().replace(/hostname /,"");
-//					}
-//					
-//					matches = ssh.output.match(/username .+/g);
-//				
-//					if(matches)
-//					{
-//						users = new ArrayCollection();
-//						
-//						for (var i:int = 0; i < matches.length; i++) 
-//						{
-//							var user:UserVo = new UserVo();
-//							var arr:Array = matches[i].split(" ");
-//							user.no = i + 1;
-//							user.userName = arr[1];
-//							user.privilege = arr[3];
-//							user.secret = arr[5]
-//							user.hash = arr[6];
-//							users.addItem(user);
-//						}
-//					}
-//				}
-//
-//				currentItem.hostName = hostName;
-//				currentItem.label = ssh.output;
-//				currentItem.onLine = !!(currentItem.label);
-//				currentItem.userList = users;
-//
-//				trace(ssh.output);
-//
-//				if(list)
-//				{
-//					appModel.hostList = list;
-//					appModel.hostList.refresh();
-//				}
-//			}
+
 //			
 //			var e:LoopEvent = new LoopEvent(LoopEvent.DO_LOOP, list, ++currenPosition);
 //			doAsyncChain(e);
 		}
 		
-		/**
-		 * Process error handling...
-		 * Sometimes stuff that's not an error comes through here... why? i'm not sure... but complete gets called eventually anyway.
-		 **/ 
-		protected function onErrorSSH(event:Event):void{
-			
-//			var out:String = "";
-//			var currentItem:HostVo = list.getItemAt(currenPosition) as HostVo;
-//			
-//			if(ssh){
-//				ssh.removeEventListener(Event.COMPLETE, onOutputSSH);
-//				ssh.removeEventListener(Event.STANDARD_ERROR_CLOSE, onErrorSSH);
-//				ssh.removeEventListener("notFoundJava", noJavaHandler);				
-//				
-//				currentItem.label = ssh.error;
-//				currentItem.onLine = !!(ssh.output);
-//				
-//				trace(ssh.error);
-//				
-//				if(list)
-//				{
-//					appModel.hostList = list;
-//					appModel.hostList.refresh();
-//				}
-//			}			
-//			
-//			if(currenPosition < lastPosition + 1){
-//				var nextItem:* = list.getItemAt(currenPosition + 1);
-//				doAsyncChain(new LoopEvent(LoopEvent.DO_LOOP, list, nextItem));
-//			}
+		protected function onErrorSSH(event:ProgressEvent):void
+		{
+			appModel.standardError = multiSSH.error;
 		}		
 	}
 }

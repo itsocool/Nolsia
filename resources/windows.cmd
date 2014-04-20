@@ -3,7 +3,7 @@
 @cd /d "%currdir%"
 @java -version >NUL 2>&1
 if %ERRORLEVEL% == 0 goto FOUND
- 	echo [Not found java] >&2
+ 	echo [ERROR:SYSTEM] Not found java >&2
 goto END
 
 :FOUND

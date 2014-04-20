@@ -13,21 +13,21 @@
 			
 			import mx.core.UIComponent;
 			import mx.events.FlexEvent;
-			
+
 			[Inject]
 			public var model:MainViewPresentationModel;
-			
+
 			protected function init(event:FlexEvent):void
 			{
 				LOG.debug("init");
 			}
-			
+
 			protected function listConnections_clickHandler(event:MouseEvent):void
 			{
 				if(event.relatedObject is UIComponent && listConnections.selectedItem is TaskVo)
 				{
 					var task:TaskVo = listConnections.selectedItem as TaskVo;
-					
+
 					switch(UIComponent(event.relatedObject).id)
 					{
 						case "btnOpen":
@@ -36,19 +36,19 @@
 							model.taskOpen(task);
 							break;
 						}
-							
+
 						case "btnEdit":
 						{
 							model.taskEdit(task);
 							break;
 						}
-							
+
 						case "btnDelete":
 						{
 							model.taskDelete(task);
 							break;
 						}
-							
+
 						default:
 						{
 							break;
@@ -56,7 +56,7 @@
 					}					
 				}
 			}
-			
+
 		]]>
 	</fx:Script>
 	<fx:Declarations>
@@ -74,6 +74,6 @@
 	<s:List id="listConnections" dataProvider="{dataProvider}" labelField="description"  width="100%" height="100%"
 			click="listConnections_clickHandler(event)"
 			itemRenderer="com.asokorea.view.renderers.ConnectionListItemRenderer">
-		
+
 	</s:List>
 </s:BorderContainer>

@@ -8,9 +8,22 @@
 	<fx:Script>
 		<![CDATA[
 			import spark.events.TextOperationEvent;
-			
+
+			private var _terminal:String = "";
+
 			[Bindable]
-			public var terminal:String = "";
+			public function get terminal():String
+			{
+				return _terminal;
+			}
+
+			public function set terminal(value:String):void
+			{
+				if(value)
+				{
+					_terminal += value;
+				}
+			}
 
 			protected function scroll():void
 			{
@@ -19,15 +32,15 @@
 					terminalArea.scroller.verticalScrollBar.value=terminalArea.scroller.verticalScrollBar.maximum;
 				}
 			}
-			
+
 		]]>
 	</fx:Script>
 	<s:HGroup width="100%" verticalAlign="middle">
 		<s:Label text="Terminal" fontWeight="bold"/>
 		<mx:Spacer width="100%" />
 		<mx:CheckBox id="chkAutoScroll" label="Auto Scroll" />
-		<mx:LinkButton id="btnClearTerminal" label="Clear" click="terminal=''"/>
+		<mx:LinkButton id="btnClearTerminal" label="Clear" click="_terminal=''"/>
 	</s:HGroup>
-	
+
 	<s:TextArea editable="false" width="100%" height="100%" text="{terminal}" updateComplete="scroll()" verticalScrollPolicy="on" id="terminalArea"  color="#00FF1E" fontFamily="Courier New" fontSize="11"/>
 </s:VGroup>

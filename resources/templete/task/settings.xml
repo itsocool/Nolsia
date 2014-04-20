@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-	<taskList>
-		<taskRef>_default_</taskRef>
-	</taskList>
+	<defaultLogDir></defaultLogDir>
+	<tasks>
+		<taskRef>
+			<taskName>_default_</taskName>
+			<taskBaseDir><![CDATA[D:\work\workspace\asokorea\Nolsia\resources\task\_default_]]></taskBaseDir>
+		</taskRef>
+	</tasks>
 </settings> 

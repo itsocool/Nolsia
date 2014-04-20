@@ -1,5 +1,6 @@
 package com.asokorea.model
 {
+	import com.asokorea.model.vo.SettingsVo;
 	import com.asokorea.model.vo.TaskVo;
 	
 	import flash.filesystem.File;
@@ -24,7 +25,7 @@ package com.asokorea.model
 
 		public var hostList:ArrayCollection;
 
-		public var settings:ArrayCollection;
+		public var settingsVo:SettingsVo;
 
 		public var lastTaskName:String;
 		

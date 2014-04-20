@@ -7,11 +7,14 @@ if %ERRORLEVEL% == 0 goto FOUND
 goto END
 
 :FOUND
-	@set task=%1
+	@set host=%1
+	@set user=%2
+	@set pass=%3
+	@set port=%4
+	@set command=%5
 
-	.\bin\jre7\bin\java -Xms16m -Xmx1024m -jar .\bin\MultiSSH.jar %task%
+	..\..\Nolsia\src\assets\bin\jre7\bin\java -Xms16m -Xmx1024m -jar MultiSSH.jar 
 
-	if not %ERRORLEVEL% == 0 echo [ERROR] >&2
 goto end
 	
 :END

@@ -61,7 +61,7 @@
 	<!-- Background Label -->
 
 	<!-- Task Pop up  -->
-	<view:TaskSetting includeIn="FIRST" dataProvider="{model.appModel.settings}" verticalCenter="0" horizontalCenter="0" />
+	<view:TaskSetting includeIn="FIRST" dataProvider="{model.appModel.settingsVo.tasks}" verticalCenter="0" horizontalCenter="0" />
 	<!-- Task Pop up  -->
 
 	<!--main view-->
@@ -79,10 +79,10 @@
 						<s:VerticalLayout />
 					</s:layout>
 					<s:HGroup verticalAlign="middle" width="100%">
+						<mx:Button icon="{Icons.DISK}" label="Open" id="btnHostListOpen" click="model.browseHostList()" />
 						<mx:TextInput id="txiHostFile" editable="false" width="100%" toolTip="{txiHostFile.text}" text="{model.appModel.selectedTask.importHostListFile}" />
 					</s:HGroup>
 					<s:HGroup verticalAlign="middle" width="100%">
-						<mx:Button icon="{Icons.DISK}" label="Open" id="btnHostListOpen" click="model.browseHostList()" />
 						<mx:Button icon="{Icons.ARROW_REFRESH}" id="btnExecuteLoop" label="Refresh" click="model.loadHostList()" enabled="{!!model.appModel.hostFile}"/>
 						<mx:Button icon="{Icons.DELETE}" id="btnHostListDelete" label="Clear List" click="model.clearHostList()" enabled="{model.appModel.hasHostList}"/>
 						<mx:Spacer width="100%"/>
@@ -99,6 +99,10 @@
 							<mx:DataGridColumn dataField="isDefault" headerText="Stanard" itemRenderer="com.asokorea.view.StandardItemRenderer"/>
 						</mx:columns>
 					</mx:DataGrid>
+					<s:HGroup verticalAlign="middle" width="100%">
+						<mx:Button icon="{Icons.DISK}" label="Open" id="btnLogOpen" click="model.browseHostList()" />
+						<mx:TextInput id="txiLogDir" editable="false" width="100%" toolTip="{txiLogDir.text}" text="{model.appModel.selectedTask.logPath}" />
+					</s:HGroup>
 				</s:NavigatorContent>
 			</mx:TabNavigator>	
 			<mx:VDividedBox width="50%" height="100%">
@@ -126,12 +130,14 @@
 		</mx:HDividedBox>
 	</s:BorderContainer>
 	
-	<!--main view-->
-	<s:BorderContainer includeIn="BUSY" top="90" bottom="90" left="160" right="160"
-					   borderAlpha=".7" backgroundAlpha=".7" borderWeight="10" cornerRadius="16"
+	<!--Busy spinner -->
+	<s:BorderContainer includeIn="BUSY" top="90" bottom="90" left="160" right="160" maxWidth="1024" maxHeight="768"
+					   borderAlpha=".9" backgroundAlpha=".9" borderWeight="10" cornerRadius="16"
 					   verticalCenter="0" horizontalCenter="0">
 		<util:Spinner size="48" verticalCenter="0" horizontalCenter="0" tickColor="#66AAFF" numTicks="18" fadeSpeed="1000" speed="1200"/>
+		<mx:Label width="100%" verticalCenter="100" text="Loading..." fontSize="12" textAlign="center" />
+		<mx:Image top="4" left="4" source="{Icons.CANCEL}" click="currentState='OPEN'" />
 	</s:BorderContainer>
-	<!--main view-->
+	<!--Busy spinner -->
 	
 </s:Group>

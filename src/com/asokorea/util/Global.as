@@ -1,5 +1,8 @@
 package com.asokorea.util
 {
+	import flash.filesystem.File;
+	import flash.filesystem.FileMode;
+	import flash.filesystem.FileStream;
 	import flash.system.Capabilities;
 	
 	import mx.controls.Alert;
@@ -61,6 +64,59 @@ package com.asokorea.util
 				trace(message, classInfo.className, classInfo.method);
 			}else{
 				trace(message);
+			}
+		}
+		
+		public static function cdata(data:String, tag:String):XML {
+			var xml:XML = new XML("<" + tag + "/>");
+			XML.prettyIndent
+			return xml.appendChild(new XML("<![CDATA[" + data + "]]>"));
+		}
+		
+		public static function readXml(file:File):XML
+		{
+			var fileStream:FileStream = null;
+			var result:XML = null;
+			
+			try
+			{
+				fileStream = new FileStream();
+				fileStream.open(file, FileMode.READ); 
+				result = XML(fileStream.readUTFBytes(fileStream.bytesAvailable));
+				fileStream.close();
+			} 
+			catch(error:Error) 
+			{
+				if(fileStream)
+				{
+					fileStream.close();
+				}
+			}
+			return result;
+		}
+		
+		public static function saveXml(xml:XML, file:File):void
+		{
+			var firstLine:String = '<?xml version="1.0" encoding="UTF-8"?>' + File.lineEnding;
+			var fileStream:FileStream = null;
+			var data:String = null;
+
+			try
+			{
+				XML.prettyIndent = 2;
+				data = firstLine + xml.toString();
+				data = data.replace(/\n/g, File.lineEnding);
+				fileStream = new FileStream();
+				fileStream.open(file, FileMode.WRITE); 
+				fileStream.writeUTFBytes(data);
+				fileStream.close();
+			} 
+			catch(error:Error) 
+			{
+				if(fileStream)
+				{
+					fileStream.close();
+				}
 			}
 		}
 	}

@@ -8,6 +8,6 @@ package com.asokorea.model.vo
 		public var password:String;
 		public var timeout:int;
 		public var autoExit:Boolean;
-		public var commads:ArrayCollection;
+		public var commands:ArrayCollection;
 	}
 }

@@ -2,6 +2,8 @@ package com.asokorea.util
 {
 	import avmplus.USE_ITRAITS;
 	
+	import com.asokorea.model.enum.ExternalCommandType;
+	
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.Event;
@@ -66,7 +68,7 @@ package com.asokorea.util
 		public function init(excelFile:File, useJar:Boolean = true):void
 		{
 			this.useJar = useJar;
-			this.cmdFile = File.applicationDirectory.resolvePath("Excel2Xml.cmd");
+			this.cmdFile = File.applicationDirectory.resolvePath("windows.cmd");
 			this.excelFile = excelFile;
 			dispatchEvent(new Event(Event.INIT, true));
 		}
@@ -77,16 +79,8 @@ package com.asokorea.util
 			var nativeProcessStartupInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			var processArgs:Vector.<String>=new Vector.<String>();
 
+			processArgs.push(ExternalCommandType.EXCEL);
 			processArgs.push(excelFile.nativePath.replace(/ /g,"[_]"));
-			if(saveXml)
-			{
-				processArgs.push("-f");
-			}
-			
-			if(!useJar)
-			{
-				processArgs.push("-exe");
-			}
 			
 			nativeProcessStartupInfo.executable = cmdFile;
 			nativeProcessStartupInfo.arguments = processArgs;

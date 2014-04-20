@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow title="Edit Connection" xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:components="org.drushpal.view.components.*"  width.normal="370">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			import mx.utils.UIDUtil;
+			
+			import org.drushpal.model.enum.Icons;
+			import org.drushpal.model.vo.Connection;
+			
+			[Bindable]
+			public var connection:Connection;
+			//states
+			public static const STATE_NORMAL:String = "normal";
+			public static const STATE_DISABLED:String = "disabled";
+			
+			
+			private function close():void{
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));		
+			}
+			private function save():void{
+				
+				connection.root = inRoot.text;
+				connection.host = inHost.text;
+				connection.port = inPort.text;
+				connection.username = inUser.text;
+				connection.identity = identity.text;
+				connection.uri = inURI.text;
+				connection.name = inName.text;
+				connection.password = inPassword.text;
+				connection.drushpath = inDrushPath.text;
+				
+				if(!connection.uuid.length) connection.uuid = UIDUtil.createUID();
+				dispatchEvent(new ConnectionEvent(ConnectionEvent.SAVE_CONNECTION,false,false,connection));
+				close();
+			}
+			private var file:File;
+			private function browse():void{
+				file = new File();
+				file.addEventListener(Event.SELECT,onBrowse);
+				file.browseForOpen("Select Identity File");
+			}
+			private function onBrowse(event:Event):void{
+				identity.text = file.nativePath;
+			}
+			
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="normal"/>
+		<s:State name="disabled"/>
+	</s:states>
+	<s:layout>
+		<s:VerticalLayout paddingLeft="15" paddingRight="15" paddingTop="10" paddingBottom="10"/>
+	</s:layout>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<mx:StringValidator id="valName" required="true" requiredFieldError="Name is required, this can be anything you want." source="{inName}" property="text" />
+		<mx:StringValidator id="valDomain" required="true" requiredFieldError="Host is required (IP address or Domain name)" source="{inHost}" property="text" />
+		<mx:StringValidator id="valPort" required="true" requiredFieldError="Port is required, 22 is default for SSH" source="{inPort}" property="text" />
+	</fx:Declarations>
+	<s:Label text="Site Information" styleName.normal="InformationLabel" fontWeight.normal="bold"/>
+	<s:HGroup horizontalAlign="center" width="100%" height="28" styleName="formElement" verticalAlign="middle">
+		<s:Label text="Name"/>
+		<components:QuickHelp text="This is the name that will be shown on the DrushPal homescreen."/>
+		<s:TextInput maxChars="40" text="{connection.name}" id="inName" width="100%"/>
+	</s:HGroup>	
+	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+		<s:Label text="Web Root"/>
+		<components:QuickHelp text="This is the root directory of the drupal installation."/>
+		<s:TextInput  text="{connection.root}" restrict="a-zA-Z0-9~/\-_\\.:" id="inRoot" width="100%"/>
+	</s:HGroup>
+	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+		<s:Label text="URI" />
+		<components:QuickHelp text="This is the URI of the root of your Drupal website."/>
+		<s:TextInput text="{connection.uri}" id="inURI" width="100%" restrict="a-zA-Z0-9~/\-_\\:."   />
+	</s:HGroup> 
+	<s:Label text="Connection Information" styleName.normal="InformationLabel" fontWeight.normal="bold"/>
+	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+		<s:Label text="Host"/>
+		<components:QuickHelp text="This is the host of the machine you'd like to manage with DrushPal."/>
+		<s:TextInput text="{connection.host}" id="inHost" restrict="a-zA-Z0-9~/\-_\\:." width="100%"  />
+		<s:Label text="Port" />
+		<components:QuickHelp text="This is SSH port number for the connection to the remote machine you'd like to manage with DrushPal."/>
+		<s:TextInput text="{connection.port}" restrict="0-9" id="inPort" width="40" />
+	</s:HGroup>
+	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+		<s:Label text="Path to Drush" />
+		<components:QuickHelp text="It is a good idea to include the path to Drush on the remote machine because some SSH clients don't register bash aliases."/>
+		<s:TextInput text="{connection.drushpath}" restrict="a-zA-Z0-9~/\-_\\.:"  id="inDrushPath" width="100%"   />
+	</s:HGroup>
+	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+		<s:Label text="Key File"/>
+		<components:QuickHelp text="This is the an Key File which identifies you with a secret key."/>
+		<s:Label id="identity" width="100%" text="{connection.identity}"/>
+		<mx:Image click="browse();"  width="16" height="16" source="{Icons.MAGNIFIER}" buttonMode="true" />
+	</s:HGroup>
+	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+		<s:Label text="User"/>
+		<components:QuickHelp text="This is your remote machine's username for logging in."/>
+		<s:TextInput text="{connection.username}" restrict="a-zA-Z0-9~/\-_\\." id="inUser" width="100%"  />
+	</s:HGroup>
+	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+		<s:Label text="Password"/>
+		<components:QuickHelp text="This is the password to connect to a remote machine. Using a Key File is generally considered more secure."/>
+		<s:TextInput text="{connection.password}" id="inPassword" displayAsPassword="true" width="100%"  />
+	</s:HGroup>
+	
+	<s:HGroup horizontalAlign="right" width="100%" >
+		<mx:Button icon="{Icons.DISK}" click="save();"   label="Save" id="btnSave"/>
+		<mx:Button icon="{Icons.CANCEL}" click="close();"   label="Cancel"  id="btnCancel"/>
+	</s:HGroup>	
+	
+	
+</s:TitleWindow>

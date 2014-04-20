@@ -6,7 +6,6 @@ package com.asokorea.controller
 	import com.asokorea.model.NavigationModel;
 	import com.asokorea.model.enum.MainCurrentState;
 	import com.asokorea.model.vo.HostVo;
-	import com.asokorea.model.vo.TaskVo;
 	import com.asokorea.model.vo.UserVo;
 	import com.asokorea.util.Excel2Xml;
 	import com.asokorea.util.JSSH;
@@ -52,7 +51,6 @@ package com.asokorea.controller
 		private var list:ArrayCollection = null;
 		
 		private var ssh:JSSH;
-		private var commandFile:String;
 		
 		[PostConstruct]
 		public function init():void
@@ -68,7 +66,11 @@ package com.asokorea.controller
 		[EventHandler(event="FileEventEX.HOSTLIST_FILE_BROWSE")]
 		public function browseHostList(event:FileEventEX):void
 		{
-			appModel.hostFile = (appModel.hostFile && appModel.hostFile.exists) ? appModel.hostFile : File.userDirectory;
+			if(!appModel.hostFile || !appModel.hostFile.exists)
+			{
+				appModel.hostFile = File.userDirectory.resolvePath("task/_default_");
+			}
+			
 			appModel.hostFile.addEventListener(Event.SELECT, onSelectHostList);
 			appModel.hostFile.addEventListener(Event.CANCEL, onCancel)
 			appModel.hostFile.browseForOpen("Select Host List", appModel.hostFileTypeFilter);
@@ -165,8 +167,6 @@ package com.asokorea.controller
 				var vo:HostVo=null;
 				var hostList:ArrayCollection = new ArrayCollection;
 				
-				commandFile = "command.sh";
-				
 				for (var i:int=0; i < xml.sheet[0].row.length(); i++)
 				{
 					var row:Object= xml.sheet[0].row[i];
@@ -179,7 +179,6 @@ package com.asokorea.controller
 						vo.loginId=row.col[1].toString();
 						vo.password=row.col[2].toString();
 						vo.port ||= 22;
-						vo.commandFile = commandFile;
 						
 						hostList.addItem(vo);
 					}
@@ -188,6 +187,7 @@ package com.asokorea.controller
 				appModel.hasHostList = true;
 				appModel.selectedTask.importHostListFile = appModel.hostFile.nativePath;
 				appModel.selectedTask.saveHostListXml(xml);
+				appModel.selectedTask.saveTask();
 			}
 
 			if(excel2xml)

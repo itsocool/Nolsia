@@ -3,6 +3,9 @@ package com.asokorea.model.enum
 
 	public final class Icons
 	{
+		[Embed(source="assets/icons/accept.png")]
+		public static const ACCEPT:Class;
+
 		[Embed(source="assets/icons/add.png")]
 		public static const ADD:Class;
 

@@ -2,9 +2,9 @@
 <task>
 	<taskName>_default_</taskName>
 	<description><![CDATA[Default Task]]></description>
-	<importHostListFile><![CDATA[D:\work\workspace\asokorea\Nolsia\resources\task\_default_\호스트.xlsx]]></importHostListFile>
-	<exportedHostListFile><![CDATA[D:\work\workspace\asokorea\Nolsia\resources\task\_default_\호스트.xlsx.xml]]></exportedHostListFile>
-	<logPath><![CDATA[D:\work\workspace\asokorea\Nolsia\resources\task\_default_\logs]]></logPath>
+	<importHostListFile/>
+	<exportedHostListFile/>
+	<logPath/>
 	<ssh>
 		<user><![CDATA[nolsia]]></user>
 		<password><![CDATA[123456]]></password>

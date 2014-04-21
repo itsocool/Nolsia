@@ -7,8 +7,9 @@ package com.asokorea.event
 	
 	public class FileEventEX extends FileEvent
 	{
-		static public const HOSTLIST_FILE_BROWSE:String = "hostListFileBrowse";
-		static public const HOSTLIST_FILE_LOAD:String = "hostListFileLoad";
+		public static const HOSTLIST_FILE_BROWSE:String = "hostListFileBrowse";
+		public static const HOSTLIST_FILE_LOAD:String = "hostListFileLoad";
+		public static const LOG_DIRECTORY_BROWSE:String = "logDirectoryBrowse";
 		
 		public function FileEventEX(type:String, file:File=null)
 		{

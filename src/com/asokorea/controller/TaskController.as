@@ -39,7 +39,7 @@ package com.asokorea.controller
 			var task:TaskVo = event.taskVo;
 			var hostFile:File = new File(task.importHostListFile);
 			appModel.selectedTaskVo = task;
-			appModel.hostFile = (task.importHostListFile && hostFile && hostFile.exists) ? hostFile : null;
+			appModel.selectedHostListFile = (task.importHostListFile && hostFile && hostFile.exists) ? hostFile : null;
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
 		

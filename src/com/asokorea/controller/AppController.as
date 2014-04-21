@@ -7,6 +7,7 @@ package com.asokorea.controller
 	import com.asokorea.model.NavigationModel;
 	import com.asokorea.model.enum.MainCurrentState;
 	import com.asokorea.model.vo.HostVo;
+	import com.asokorea.model.vo.SettingsVo;
 	import com.asokorea.model.vo.TaskVo;
 	import com.asokorea.model.vo.UserVo;
 	import com.asokorea.util.Excel2Xml;
@@ -27,28 +28,29 @@ package com.asokorea.controller
 	import flash.utils.IDataInput;
 	
 	import mx.collections.ArrayCollection;
+	import mx.collections.Sort;
 	import mx.controls.Alert;
 	import mx.events.CloseEvent;
 	import mx.utils.StringUtil;
 	
 	import org.swizframework.storage.SharedObjectBean;
-
+	
 	public class AppController
 	{
 		private var process:NativeProcess;
 		
 		[Inject]
 		public var appModel:AppModel;
-
+		
 		[Inject]
 		public var so:SharedObjectBean;
-
+		
 		[Inject]
 		public var navModel:NavigationModel;
-
+		
 		[Dispatcher]
 		public var dispatcher:IEventDispatcher;
-
+		
 		private var multiSSH:MultiSSH;
 		private var hostMap:Dictionary = new Dictionary();		
 		
@@ -57,32 +59,47 @@ package com.asokorea.controller
 		{
 			var appXml:XML=NativeApplication.nativeApplication.applicationDescriptor;
 			var ns:Namespace=appXml.namespace();
-
+			
 			appModel.appName=appXml.ns::name.toString();
 			appModel.appVersionLabel=appXml.ns::versionLabel[0].toString();
 			navModel.MAIN_CURRENT_SATAE=MainCurrentState.FIRST;
 		}
-
+		
 		[EventHandler(event="FileEventEX.HOSTLIST_FILE_BROWSE")]
 		public function browseHostList(event:FileEventEX):void
 		{
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_BUSY;
 			
-			if(!appModel.hostFile || !appModel.hostFile.exists)
+			if(!appModel.selectedHostListFile || !appModel.selectedHostListFile.exists)
 			{
-				appModel.hostFile = File.userDirectory.resolvePath("task/_default_");
+				appModel.selectedHostListFile = File.userDirectory.resolvePath("task/_default_");
 			}
 			
-			appModel.hostFile.addEventListener(Event.SELECT, onSelectHostList);
-			appModel.hostFile.addEventListener(Event.CANCEL, onCancel)
-			appModel.hostFile.browseForOpen("Select Host List", appModel.hostFileTypeFilter);
+			appModel.selectedHostListFile.addEventListener(Event.SELECT, onSelectHostList);
+			appModel.selectedHostListFile.addEventListener(Event.CANCEL, onCancel)
+			appModel.selectedHostListFile.browseForOpen("Select Host List", appModel.hostFileTypeFilter);
+		}
+		
+		[EventHandler(event="FileEventEX.LOG_DIRECTORY_BROWSE")]
+		public function browseLogDir(event:FileEventEX):void
+		{
+			var logDir:File = event.file;
+			if(!logDir || !logDir.exists || !logDir.isDirectory)
+			{
+				logDir = SettingsVo.DEFAULT_LOG_DIR;
+				logDir.browseForDirectory("Select Log Directory");
+				logDir.addEventListener(Event.SELECT, function(evt:Event):void{
+					appModel.selectedTaskVo.logPath = logDir.nativePath;
+					appModel.selectedTaskVo.saveTask();
+				});
+			}
 		}
 		
 		protected function onCancel(event:Event):void
 		{
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
-			appModel.hostFile.removeEventListener(Event.SELECT, onSelectHostList);
-			appModel.hostFile.removeEventListener(Event.CANCEL, onCancel)
+			appModel.selectedHostListFile.removeEventListener(Event.SELECT, onSelectHostList);
+			appModel.selectedHostListFile.removeEventListener(Event.CANCEL, onCancel)
 		}
 		
 		[EventHandler(event="FileEventEX.HOSTLIST_FILE_LOAD")]
@@ -91,21 +108,23 @@ package com.asokorea.controller
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_BUSY;
 			getHostList(event.file);
 		}
-
+		
 		protected function onSelectHostList(event:Event):void
 		{
-			appModel.hostFile.removeEventListener(Event.SELECT, onSelectHostList);
-			appModel.hostFile.removeEventListener(Event.CANCEL, onCancel)
-
-			if (appModel.hostFile && appModel.hostFile.exists && !appModel.hostFile.isDirectory)
+			appModel.selectedHostListFile.removeEventListener(Event.SELECT, onSelectHostList);
+			appModel.selectedHostListFile.removeEventListener(Event.CANCEL, onCancel)
+			
+			if (appModel.selectedHostListFile && appModel.selectedHostListFile.exists && !appModel.selectedHostListFile.isDirectory)
 			{
+				appModel.selectedTaskVo.importHostListFile = appModel.selectedHostListFile.nativePath;
+				appModel.selectedTaskVo.saveTask();
 				if(navModel.MAIN_CURRENT_SATAE != NavigationModel.MAIN_FIRST)
 				{
-					getHostList(appModel.hostFile);				
+					getHostList(appModel.selectedHostListFile);				
 				}
 			}
 		}
-
+		
 		private var excel2xml:Excel2Xml;
 		
 		private function getHostList(hostFile:File):void
@@ -188,11 +207,11 @@ package com.asokorea.controller
 				}
 				appModel.hostList = hostList;
 				appModel.hasHostList = true;
-				appModel.selectedTaskVo.importHostListFile = appModel.hostFile.nativePath;
+				appModel.selectedTaskVo.importHostListFile = appModel.selectedHostListFile.nativePath;
 				appModel.selectedTaskVo.saveHostListXml(xml);
 				appModel.selectedTaskVo.saveTask();
 			}
-
+			
 			if(excel2xml)
 			{
 				excel2xml.dispose();
@@ -224,6 +243,16 @@ package com.asokorea.controller
 		[EventHandler( event="TaskEvent.EXECUTE" )]
 		public function executeTask(event:TaskEvent) : void
 		{
+			if(!appModel.selectedTaskVo || !appModel.selectedTaskVo.logPath)
+			{
+				var logDir:File = SettingsVo.DEFAULT_LOG_DIR;
+				logDir.browseForDirectory("Select Log Directory");
+				logDir.addEventListener(Event.SELECT, function(evt:Event):void{
+					appModel.selectedTaskVo.logPath = logDir.nativePath;
+					appModel.selectedTaskVo.saveTask();
+				});
+			}
+			
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_PROCESS;
 			
 			multiSSH = new MultiSSH();
@@ -255,7 +284,21 @@ package com.asokorea.controller
 		{
 			if(event.hostVo is HostVo)
 			{
-				Alert.show(event.hostVo.hostName);
+				for each (var hostVo:HostVo in appModel.hostList) 
+				{
+					hostVo.equalsToDefaultUser(event.hostVo);
+				}
+				
+				var sort:Sort = new Sort();
+				sort.fields = ["isDefault"];
+				sort.compareFunction = function(obj1:Object, obj2:Object):int{
+					var result:int = 0;
+					if(obj1 > obj2) result = 1;
+					if(obj1 < obj2) result -1;
+					return result;
+				} 
+				appModel.hostList.sort = sort;
+				appModel.hostList.refresh();
 			}
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
@@ -284,62 +327,63 @@ package com.asokorea.controller
 			if(multiSSH.output)
 			{
 				data = multiSSH.output;
-
-				appModel.terminalOutput = data;
-				var result:Object = null;
+				
+				var obj:Object = null;
 				var taskVo:TaskVo = null;
 				var hostVo:HostVo = null;
+				var lines:Array = data.replace(/\r\n/,"\n").split("\n");
+				var terminalOutput:String = null;
 				
-				if(data.indexOf("[CONNECTED]") >= 0)
+				for each (var line:String in lines) 
 				{
-					result = JSON.parse(data.replace(/\[CONNECTED]/,""));
-					hostVo = hostMap[result["ip"]] as HostVo;
-					hostVo.isConnected = true;
-				}else if(data.indexOf("[OUTPUT]") >= 0)
-				{
-					result = JSON.parse(data.replace(/\[OUTPUT\]/,""));
-					taskVo = appModel.selectedTaskVo;
-					hostVo = hostMap[result["ip"]] as HostVo;
-					hostVo.hostName = result["hostName"];
-					hostVo.isComplete = true;
-					hostVo.logFile = new File(taskVo.logPath).resolvePath(result["fileName"]);
-					
-					var str:String = Global.readFile(hostVo.logFile);
-					var matches:Array = null;
-					var hostName:String = null;
-					
-					if(str)
+					if(!line || !StringUtil.trim(line))
 					{
-						if((matches = str.match(/hostname .+/)) && matches.length > 0)
-						{
-							hostName = matches[0].toString().replace(/hostname /,"");
-						}
-						
-						matches = str.match(/username .+/g);
-						
-						if(matches)
-						{
-							hostVo.userList = new ArrayCollection();
-							hostVo.userMap = new Dictionary();
-							
-							for (var i:int = 0; i < matches.length; i++) 
-							{
-								var user:UserVo = new UserVo();
-								var arr:Array = matches[i].split(" ");
-								user.no = i + 1;
-								user.userName = arr[1];
-								user.privilege = arr[3];
-								user.secret = arr[5]
-								user.hash = arr[6];
-								hostVo.userMap[user.userName] = user;
-								hostVo.userList.addItem(user);
-							}
-						}
+						continue;
 					}
 					
+					var ip:String = null;
+					obj = getObjectFromJSON(line);
+					
+					if(obj)
+					{
+						ip = obj["result"]["ip"].toString();
+						if(obj["type"] == "CONNECTED")
+						{
+							hostVo = hostMap[ip] as HostVo;
+							hostVo.isConnected = true;
+							terminalOutput = StringUtil.substitute("[CONNECTED] {0}", ip);
+						}else if(obj["type"] == "OUTPUT")
+						{
+							hostVo = hostMap[ip] as HostVo;
+							taskVo = appModel.selectedTaskVo;
+							hostVo.hostName = obj["result"]["hostName"].toString();
+							hostVo.isComplete = true;
+							hostVo.logFile = new File(taskVo.logPath).resolvePath(obj["result"]["fileName"]);
+							terminalOutput = StringUtil.substitute("[OUTPUT] {0} {1}", ip, hostVo.hostName);    
+						}		
+					}else{
+						terminalOutput = line;
+					}					
+					
+					appModel.terminalOutput = terminalOutput + "\n";    
 					appModel.hostList.refresh();
 				}
 			}
+		}
+		
+		protected function getObjectFromJSON(outputLine:String):Object
+		{
+			var result:Object = null;
+			
+			if(outputLine.indexOf("[CONNECTED]") >= 0)
+			{
+				result = JSON.parse('{"type":"CONNECTED","result":' + outputLine.replace(/\[CONNECTED]/,"") + '}');
+			}else if(outputLine.indexOf("[OUTPUT]") >= 0)
+			{
+				result = JSON.parse('{"type":"OUTPUT","result":' + outputLine.replace(/\[OUTPUT\]/,"") + '}');
+			}
+			
+			return result;
 		}
 		
 		protected function onErrorSSH(event:ProgressEvent):void

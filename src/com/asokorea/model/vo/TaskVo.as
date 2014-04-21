@@ -66,14 +66,17 @@ package com.asokorea.model.vo
 				importHostListFile = configXml.importHostListFile;
 				exportedHostListFile = configXml.exportedHostListFile;
 				logPath = configXml.logPath;
-				
-				var hostXmlFile:File = new File(configXml.importHostListFile);
-				
-				if(hostXmlFile && hostXmlFile.exists)
+
+				if(importHostListFile)
 				{
-					hostListXml = Global.readXml(hostXmlFile);
-				}
-				
+					var hostXmlFile:File = new File(importHostListFile);
+					
+					if(hostXmlFile && hostXmlFile.exists)
+					{
+						hostListXml = Global.readXml(hostXmlFile);
+					}
+				}	
+
 				ssh = new SshVo();
 				ssh.user = configXml.ssh.user;
 				ssh.password = configXml.ssh.password;

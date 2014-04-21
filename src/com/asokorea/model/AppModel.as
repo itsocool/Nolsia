@@ -17,7 +17,7 @@ package com.asokorea.model
 
 		public var appVersionLabel:String;
 
-		public var hostFile:File;
+		public var selectedHostListFile:File;
 
 		public var hostFileTypeFilter:Array=[new FileFilter("All File", "*.*"), new FileFilter("Excel File (*.xls;*.xlsx)", "*.xls;*.xlsx"), new FileFilter("Text File (*.txt;*.xml;*.json,*.csv)", "*.txt;*.xml;*.json,*.csv")];
 

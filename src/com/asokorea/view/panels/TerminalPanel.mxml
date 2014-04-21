@@ -46,7 +46,7 @@
 	<s:HGroup width="100%" verticalAlign="middle">
 		<s:Label text="Terminal" fontWeight="bold"/>
 		<mx:Spacer width="100%" />
-		<mx:CheckBox id="chkAutoScroll" label="Auto Scroll" />
+		<mx:CheckBox id="chkAutoScroll" label="Auto Scroll" selected="true" />
 		<mx:LinkButton id="btnClearTerminal" label="Clear" click="onClear(event)"/>
 	</s:HGroup>
 

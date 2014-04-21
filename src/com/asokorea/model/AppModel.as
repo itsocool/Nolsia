@@ -35,7 +35,7 @@ package com.asokorea.model
 		
 		public var message:String;
 		
-		public var standardOutput:String;
+		public var terminalOutput:String;
 		
 		public var standardError:String;
 	}

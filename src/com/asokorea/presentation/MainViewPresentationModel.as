@@ -3,10 +3,12 @@ package com.asokorea.presentation
 
 	import com.asokorea.event.FileEventEX;
 	import com.asokorea.event.FileReaderEvent;
+	import com.asokorea.event.HostEvent;
 	import com.asokorea.event.LoopEvent;
 	import com.asokorea.event.TaskEvent;
 	import com.asokorea.model.AppModel;
 	import com.asokorea.model.NavigationModel;
+	import com.asokorea.model.vo.HostVo;
 	import com.asokorea.model.vo.TaskVo;
 	import com.asokorea.supportclass.FileExtensionFilter;
 	import com.asokorea.supportclass.FileReader;
@@ -21,6 +23,8 @@ package com.asokorea.presentation
 	
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
+	import mx.controls.DataGrid;
+	import mx.events.ListEvent;
 	
 	/**
 	 * 
@@ -110,7 +114,22 @@ package com.asokorea.presentation
 		public function start():void
 		{
 			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.EXECUTE, appModel.selectedTaskVo));
-//			dispatcher.dispatchEvent(new LoopEvent(LoopEvent.DO_LOOP, appModel.hostList));
+		}
+		
+		public function stop():void
+		{
+			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.STOP, appModel.selectedTaskVo));
+		}
+		
+		public function hostItemClick(event:ListEvent):void
+		{
+			var grid:DataGrid = event.itemRenderer.owner as DataGrid;
+			
+			if(grid is DataGrid)
+			{
+				var hostVo:HostVo = grid.selectedItem as HostVo;
+				dispatcher.dispatchEvent(new HostEvent(HostEvent.SET_DEFAULT, hostVo));
+			}
 		}
 		
 //		protected function onPreinitialize(event:FlexEvent):void

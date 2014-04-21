@@ -1,13 +1,16 @@
 package com.asokorea.controller
 {
 	import com.asokorea.event.FileEventEX;
+	import com.asokorea.event.HostEvent;
 	import com.asokorea.event.TaskEvent;
 	import com.asokorea.model.AppModel;
 	import com.asokorea.model.NavigationModel;
 	import com.asokorea.model.enum.MainCurrentState;
 	import com.asokorea.model.vo.HostVo;
 	import com.asokorea.model.vo.TaskVo;
+	import com.asokorea.model.vo.UserVo;
 	import com.asokorea.util.Excel2Xml;
+	import com.asokorea.util.Global;
 	import com.asokorea.util.MultiSSH;
 	
 	import flash.desktop.NativeApplication;
@@ -178,6 +181,7 @@ package com.asokorea.controller
 						vo.user = row.col[1].toString() || taskVo.ssh.user;
 						vo.password = row.col[2].toString() || taskVo.ssh.password;
 						vo.port ||= 22;
+						vo.taskName = taskVo.taskName;
 						hostMap[vo.ip] = vo;
 						hostList.addItem(vo);
 					}
@@ -220,7 +224,7 @@ package com.asokorea.controller
 		[EventHandler( event="TaskEvent.EXECUTE" )]
 		public function executeTask(event:TaskEvent) : void
 		{
-			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_BUSY;
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_PROCESS;
 			
 			multiSSH = new MultiSSH();
 			multiSSH.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputSSH);
@@ -228,6 +232,32 @@ package com.asokorea.controller
 			multiSSH.addEventListener(NativeProcessExitEvent.EXIT, onExit);
 			multiSSH.addEventListener("notFoundJava", noJavaHandler);
 			multiSSH.execute(event.taskVo);
+		}
+		
+		[EventHandler( event="TaskEvent.STOP" )]
+		public function stopTask(event:TaskEvent) : void
+		{
+			if(multiSSH)
+			{
+				multiSSH.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputSSH);
+				multiSSH.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorSSH);
+				multiSSH.removeEventListener(NativeProcessExitEvent.EXIT, onExit);
+				multiSSH.removeEventListener("notFoundJava", noJavaHandler);
+				multiSSH.dispose();
+			}
+			
+			multiSSH = null;
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
+		}
+		
+		[EventHandler( event="HostEvent.SET_DEFAULT" )]
+		public function hostSetDefault(event:HostEvent) : void
+		{
+			if(event.hostVo is HostVo)
+			{
+				Alert.show(event.hostVo.hostName);
+			}
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
 		
 		protected function onExit(event:NativeProcessExitEvent):void
@@ -255,87 +285,66 @@ package com.asokorea.controller
 			{
 				data = multiSSH.output;
 
-				appModel.message = data;
-				appModel.standardOutput = data;
+				appModel.terminalOutput = data;
+				var result:Object = null;
+				var taskVo:TaskVo = null;
+				var hostVo:HostVo = null;
 				
-				if(data.indexOf("[OUTPUT]") >= 0)
+				if(data.indexOf("[CONNECTED]") >= 0)
 				{
-					var result:Object = JSON.parse(data.replace(/\[OUTPUT\]/,""));
-					var taskVo:TaskVo = appModel.selectedTaskVo;
-					var hostVo:HostVo = hostMap[result["ip"]] as HostVo;
-
+					result = JSON.parse(data.replace(/\[CONNECTED]/,""));
+					hostVo = hostMap[result["ip"]] as HostVo;
+					hostVo.isConnected = true;
+				}else if(data.indexOf("[OUTPUT]") >= 0)
+				{
+					result = JSON.parse(data.replace(/\[OUTPUT\]/,""));
+					taskVo = appModel.selectedTaskVo;
+					hostVo = hostMap[result["ip"]] as HostVo;
+					hostVo.hostName = result["hostName"];
+					hostVo.isComplete = true;
+					hostVo.logFile = new File(taskVo.logPath).resolvePath(result["fileName"]);
 					
-					trace("## JSON : ", result);
-					appModel.standardOutput = "[timeStamp] " + result["timeStamp"] + File.lineEnding;
-					appModel.standardOutput += "[ip] " + result["ip"] + File.lineEnding;
-					appModel.standardOutput += "[hostName] " + result["hostName"] + File.lineEnding;
-					appModel.standardOutput += "[fileName] " + result["fileName"] + File.lineEnding;
-					appModel.standardOutput += "[dataSize] " + result["dataSize"] + File.lineEnding;
-					appModel.standardOutput += "[message] " + result["message"];
+					var str:String = Global.readFile(hostVo.logFile);
+					var matches:Array = null;
+					var hostName:String = null;
 					
+					if(str)
+					{
+						if((matches = str.match(/hostname .+/)) && matches.length > 0)
+						{
+							hostName = matches[0].toString().replace(/hostname /,"");
+						}
 						
-//					var str:String = ssh.output;
-//					var matches:Array = null;
-//					var hostName:String = null;
-//					var users:ArrayCollection = null;
-//					
-//					if(str)
-//					{
-//						if((matches = ssh.output.match(/hostname .+/)) && matches.length > 0)
-//						{
-//							hostName = matches[0].toString().replace(/hostname /,"");
-//						}
-//						
-//						matches = ssh.output.match(/username .+/g);
-//						
-//						if(matches)
-//						{
-//							users = new ArrayCollection();
-//							
-//							for (var i:int = 0; i < matches.length; i++) 
-//							{
-//								var user:UserVo = new UserVo();
-//								var arr:Array = matches[i].split(" ");
-//								user.no = i + 1;
-//								user.userName = arr[1];
-//								user.privilege = arr[3];
-//								user.secret = arr[5]
-//								user.hash = arr[6];
-//								users.addItem(user);
-//							}
-//						}
-//					}
-//					
-//					currentItem.hostName = hostName;
-//					currentItem.label = ssh.output;
-//					currentItem.onLine = !!(currentItem.label);
-//					currentItem.userList = users;
-//					
-//					trace(ssh.output);
-//					
-//					if(list)
-//					{
-//						appModel.hostList = list;
-//						appModel.hostList.refresh();
-//					}
-//					
+						matches = str.match(/username .+/g);
+						
+						if(matches)
+						{
+							hostVo.userList = new ArrayCollection();
+							hostVo.userMap = new Dictionary();
+							
+							for (var i:int = 0; i < matches.length; i++) 
+							{
+								var user:UserVo = new UserVo();
+								var arr:Array = matches[i].split(" ");
+								user.no = i + 1;
+								user.userName = arr[1];
+								user.privilege = arr[3];
+								user.secret = arr[5]
+								user.hash = arr[6];
+								hostVo.userMap[user.userName] = user;
+								hostVo.userList.addItem(user);
+							}
+						}
+					}
 					
-					
+					appModel.hostList.refresh();
 				}
 			}
-			
-//			var out:String = "";
-//			var currentItem:HostVo = list.getItemAt(currenPosition) as HostVo;
-//			
-
-//			
-//			var e:LoopEvent = new LoopEvent(LoopEvent.DO_LOOP, list, ++currenPosition);
-//			doAsyncChain(e);
 		}
 		
 		protected function onErrorSSH(event:ProgressEvent):void
 		{
-			appModel.standardError = multiSSH.error;
+			appModel.terminalOutput = multiSSH.error;
 		}		
 	}
 }

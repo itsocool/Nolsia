@@ -1,11 +1,12 @@
 package com.asokorea.event
 {
-	import com.asokorea.model.vo.TaskVo;
+	import com.asokorea.model.vo.HostVo;
 	
 	import flash.events.Event;
 	
-	public class TaskEvent extends Event
+	public class HostEvent extends Event
 	{
+		public static const SET_DEFAULT:String = "setDefault";
 		public static const ADD:String = "add";
 		public static const OPEN:String = "open";
 		public static const EDIT:String = "edit";
@@ -13,22 +14,22 @@ package com.asokorea.event
 		public static const EXECUTE:String = "execute";
 		public static const STOP:String = "stop";
 		
-		private var _task:TaskVo;
+		private var _host:HostVo;
 		
-		public function TaskEvent(type:String, task:TaskVo = null)
+		public function HostEvent(type:String, host:HostVo = null)
 		{
 			super(type, true, true);
-			_task = task;			
+			_host = host;			
 		}
 		
 		override public function clone():Event
 		{
-			return new TaskEvent(type, _task);
+			return new HostEvent(type, _host);
 		}
 
-		public function get taskVo():TaskVo
+		public function get hostVo():HostVo
 		{
-			return _task;
+			return _host;
 		}
 	}
 }

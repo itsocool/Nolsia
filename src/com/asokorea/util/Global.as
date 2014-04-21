@@ -73,16 +73,16 @@ package com.asokorea.util
 			return xml.appendChild(new XML("<![CDATA[" + data + "]]>"));
 		}
 		
-		public static function readXml(file:File):XML
+		public static function readFile(file:File):String
 		{
 			var fileStream:FileStream = null;
-			var result:XML = null;
+			var result:String = null;
 			
 			try
 			{
 				fileStream = new FileStream();
 				fileStream.open(file, FileMode.READ); 
-				result = XML(fileStream.readUTFBytes(fileStream.bytesAvailable));
+				result = fileStream.readUTFBytes(fileStream.bytesAvailable);
 				fileStream.close();
 			} 
 			catch(error:Error) 
@@ -92,6 +92,12 @@ package com.asokorea.util
 					fileStream.close();
 				}
 			}
+			return result;
+		}
+		
+		public static function readXml(file:File):XML
+		{
+			var result:XML = result = XML(readFile(file));
 			return result;
 		}
 		

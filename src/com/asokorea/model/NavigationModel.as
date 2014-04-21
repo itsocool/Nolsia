@@ -18,6 +18,7 @@ package com.asokorea.model
 
 		public static const MAIN_FIRST:String = "FIRST";
 		public static const MAIN_OPEN:String = "OPEN";
+		public static const MAIN_PROCESS:String = "PROCESS";
 		public static const MAIN_BUSY:String = "BUSY";
 		
 		public static const PATH_LOGGED_OUT:String 			= "loggedOut";

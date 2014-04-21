@@ -3,7 +3,6 @@
 						  xmlns:s="library://ns.adobe.com/flex/spark" 
 						  xmlns:mx="library://ns.adobe.com/flex/mx" 
 						  focusEnabled="true">
-	
 	<fx:Script>
 		<![CDATA[
 			import com.asokorea.model.vo.HostVo;

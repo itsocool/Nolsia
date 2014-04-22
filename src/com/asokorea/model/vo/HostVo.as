@@ -80,8 +80,8 @@ package com.asokorea.model.vo
 		{
 			var result:Boolean = false;
 			
-			if(defaultHostVo && defaultHostVo.userList && defaultHostVo.userList.length > 0 &&
-				defaultHostVo.userList.length == userList.length)
+			if(defaultHostVo && defaultHostVo.userList && defaultHostVo.userList.length &&
+				userList && userList.length && defaultHostVo.userList.length == userList.length)
 			{
 				for each (var defaultUserVo:UserVo in defaultHostVo.userList) 
 				{

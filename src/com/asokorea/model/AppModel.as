@@ -2,6 +2,7 @@ package com.asokorea.model
 {
 	import com.asokorea.model.vo.SettingsVo;
 	import com.asokorea.model.vo.TaskVo;
+	import com.asokorea.supportclass.NativeUpdater;
 	
 	import flash.filesystem.File;
 	import flash.net.FileFilter;
@@ -38,5 +39,7 @@ package com.asokorea.model
 		public var terminalOutput:String;
 		
 		public var standardError:String;
+		
+		public var updater:NativeUpdater;
 	}
 }

@@ -77,6 +77,11 @@
 				model.hostItemClick(event);
 			}
 			
+			protected function image1_clickHandler(event:MouseEvent):void
+			{
+				model.abortUpdate();
+			}
+			
 		]]>
 	</fx:Script>
 	<s:states>
@@ -84,15 +89,8 @@
 		<s:State name="OPEN" />
 		<s:State name="PROCESS"/>
 		<s:State name="BUSY" />
+		<s:State name="UPDATE"/>
 	</s:states>
-<!--	<s:transitions>
-		<s:Transition fromState="OPEN" toState="PROCESS">
-			<s:Resize duration="750" targets="{[leftSidePanel, rightSidePanel, terminalPanel]}" />
-		</s:Transition>
-		<s:Transition fromState="PROCESS" toState="OPEN">
-			<s:Resize duration="750" targets="{[leftSidePanel, rightSidePanel, terminalPanel]}" />
-		</s:Transition>
-	</s:transitions>-->
 
 	<!-- Background Label -->
 	<s:Label includeIn="FIRST" fontSize="120" fontWeight="bold" horizontalCenter="0" rotationZ="27"
@@ -105,8 +103,10 @@
 	<!-- Task Pop up  -->
 
 	<!--main view-->
-	<s:BorderContainer includeIn="OPEN,PROCESS,BUSY" id="drushArea" borderWeight="4" cornerRadius="8"
-					   left="10" top="10" right="10" bottom="10" enabled.BUSY="false">
+	<s:BorderContainer id="drushArea" includeIn="BUSY,OPEN,PROCESS,UPDATE" left="10" right="10"
+					   top="10" bottom="10" borderWeight="4" cornerRadius="8"
+					   enabled.BUSY="false"
+					   enabled.UPDATE="false">
 		<s:layout>
 			<s:VerticalLayout paddingBottom="6" paddingLeft="6" paddingRight="6" paddingTop="6" />
 		</s:layout>
@@ -206,7 +206,9 @@
 						<mx:CheckBox id="chkFixSameLine" change="onChange(event)" selected="true" />
 						<mx:LinkButton textAlign="right" icon="{Icons.WRENCH}" label="Settings" enabled="false"/>
 						<mx:LinkButton textAlign="right" icon="{Icons.HELP}" label="Help" enabled="false"/>
-						<mx:LinkButton id="btnClose"  textAlign="right" icon="{Icons.CANCEL}" label="Close Connection" enabled="false"/>
+						<!--<mx:LinkButton id="btnClose"  textAlign="right" icon="{Icons.CANCEL}" label="Close Connection" enabled="false"/>-->
+						<mx:LinkButton id="btnUpdate" textAlign="right" icon="{Icons.INFORMATION}" label="Update" click="model.update()"
+									   includeInLayout="{model.appModel.updater.hasUpdate}" visible="{model.appModel.updater.hasUpdate}"/>
 					</s:HGroup>
 					<mx:DataGrid id="dgUser" width="100%" height="100%"
 								 dataProvider="{HostVo(dgHost.selectedItem).userList}">
@@ -224,12 +226,14 @@
 	</s:BorderContainer>
 
 	<!--Busy spinner -->
-	<s:BorderContainer includeIn="BUSY" top="90" bottom="90" left="160" right="160" maxWidth="1024" maxHeight="768"
+	<s:BorderContainer includeIn="BUSY,UPDATE" top="90" bottom="90" left="160" right="160" maxWidth="1024" maxHeight="768"
 					   borderAlpha=".9" backgroundAlpha=".9" borderWeight="10" cornerRadius="16"
 					   verticalCenter="0" horizontalCenter="0">
-		<util:Spinner size="48" verticalCenter="0" horizontalCenter="0" tickColor="#66AAFF" numTicks="18" fadeSpeed="1000" speed="1200"/>
-		<mx:Label width="100%" verticalCenter="100" text="{model.appModel.message}" fontSize="12" textAlign="center" />
-		<mx:Image top="4" left="4" source="{Icons.CANCEL}" click="currentState='OPEN'" />
+		<util:Spinner includeIn="BUSY" size="48" verticalCenter="0" horizontalCenter="0" tickColor="#66AAFF" numTicks="18" fadeSpeed="1000" speed="1200"/>
+		<mx:Label includeIn="BUSY" width="100%" verticalCenter="100" text="{model.appModel.message}" fontSize="12" textAlign="center" />
+		<mx:Image left="16" top="16" click.BUSY="currentState='OPEN'" click.UPDATE="image1_clickHandler(event)" source="{Icons.CANCEL}" />
+		<mx:ProgressBar includeIn="UPDATE" left="100" right="100" horizontalCenter="0" mode="event"
+						source="{model.appModel.updater.urlStream}" verticalCenter="0"/>
 	</s:BorderContainer>
 	<!--Busy spinner -->
 

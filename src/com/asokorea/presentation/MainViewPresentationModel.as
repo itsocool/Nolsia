@@ -138,5 +138,20 @@ package com.asokorea.presentation
 			}
 			trace(Global.classInfo);
 		}
+		
+		public function update():void
+		{
+			if(appModel.updater && appModel.updater.updateUrl)
+			{
+				navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_UPDATE;
+				appModel.updater.downloadUpdate();
+			}
+		}
+		
+		public function abortUpdate():void
+		{
+			appModel.updater.abort();
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
+		}
 	}
 }

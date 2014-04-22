@@ -3,8 +3,6 @@ package com.asokorea.model.vo
 	import com.asokorea.util.Global;
 	
 	import flash.filesystem.File;
-	import flash.filesystem.FileMode;
-	import flash.filesystem.FileStream;
 	
 	import mx.collections.ArrayCollection;
 
@@ -30,6 +28,7 @@ package com.asokorea.model.vo
 			}
 			
 			settingXml = Global.readXml(SETTING_FILE); 
+//			settingXml..taskBaseDir[0] = Global.cdata(file.resolvePath("_default_").nativePath);
 			
 			if(settingXml is XML && settingXml..taskRef is XMLList)
 			{
@@ -72,6 +71,7 @@ package com.asokorea.model.vo
 			}
 			
 			settingXml.defaultLogDir = Global.cdata(logDir.nativePath, "defaultLogDir");
+			save();
 		}
 		
 		public function save():void

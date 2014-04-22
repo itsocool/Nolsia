@@ -9,9 +9,8 @@ package com.asokorea.controller
 	import com.asokorea.model.vo.HostVo;
 	import com.asokorea.model.vo.SettingsVo;
 	import com.asokorea.model.vo.TaskVo;
-	import com.asokorea.model.vo.UserVo;
+	import com.asokorea.supportclass.NativeUpdater;
 	import com.asokorea.util.Excel2Xml;
-	import com.asokorea.util.Global;
 	import com.asokorea.util.MultiSSH;
 	
 	import flash.desktop.NativeApplication;
@@ -57,11 +56,13 @@ package com.asokorea.controller
 		[PostConstruct]
 		public function init():void
 		{
-			var appXml:XML=NativeApplication.nativeApplication.applicationDescriptor;
-			var ns:Namespace=appXml.namespace();
+			var appXml:XML = NativeApplication.nativeApplication.applicationDescriptor;
+			var ns:Namespace = appXml.namespace();
 			
-			appModel.appName=appXml.ns::name.toString();
-			appModel.appVersionLabel=appXml.ns::versionLabel[0].toString();
+			appModel.appName = appXml.ns::name.toString();
+			appModel.appVersionLabel = appXml.ns::versionLabel[0].toString();
+			appModel.updater = new NativeUpdater();
+			appModel.updater.init();
 			navModel.MAIN_CURRENT_SATAE=MainCurrentState.FIRST;
 		}
 		
@@ -250,10 +251,14 @@ package com.asokorea.controller
 				logDir.addEventListener(Event.SELECT, function(evt:Event):void{
 					appModel.selectedTaskVo.logPath = logDir.nativePath;
 					appModel.selectedTaskVo.saveTask();
+					Alert.show("Setting complete!");
 				});
+				return;
 			}
 			
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_PROCESS;
+			
+			resetHost(appModel.hostList);
 			
 			multiSSH = new MultiSSH();
 			multiSSH.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputSSH);
@@ -261,6 +266,22 @@ package com.asokorea.controller
 			multiSSH.addEventListener(NativeProcessExitEvent.EXIT, onExit);
 			multiSSH.addEventListener("notFoundJava", noJavaHandler);
 			multiSSH.execute(event.taskVo);
+		}
+		
+		private function resetHost(hostList:ArrayCollection):void
+		{
+			for each (var hostVo:HostVo in hostList) 
+			{
+				hostVo.hostName = null;
+				hostVo.isComplete = false;
+				hostVo.isConnected = false;
+				hostVo.isDefault = false;
+				hostVo.logFile = null;
+				hostVo.userList = null;
+				hostVo.userMap = null;
+			}
+			
+			hostList.refresh();
 		}
 		
 		[EventHandler( event="TaskEvent.STOP" )]
@@ -289,15 +310,15 @@ package com.asokorea.controller
 					hostVo.equalsToDefaultUser(event.hostVo);
 				}
 				
-				var sort:Sort = new Sort();
-				sort.fields = ["isDefault"];
-				sort.compareFunction = function(obj1:Object, obj2:Object):int{
-					var result:int = 0;
-					if(obj1 > obj2) result = 1;
-					if(obj1 < obj2) result -1;
-					return result;
-				} 
-				appModel.hostList.sort = sort;
+//				var sort:Sort = new Sort();
+//				sort.fields = ["isDefault"];
+//				sort.compareFunction = function(obj1:Object, obj2:Object):int{
+//					var result:int = 0;
+//					if(obj1 > obj2) result = 1;
+//					if(obj1 < obj2) result -1;
+//					return result;
+//				} 
+//				appModel.hostList.sort = sort;
 				appModel.hostList.refresh();
 			}
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
@@ -316,7 +337,7 @@ package com.asokorea.controller
 			}
 			
 			multiSSH = null;
-			
+			Alert.show("Task Completed!");
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
 		

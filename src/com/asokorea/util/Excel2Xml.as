@@ -2,6 +2,7 @@ package com.asokorea.util
 {
 	import com.asokorea.model.enum.ExternalCommandType;
 	
+	import flash.desktop.NativeApplication;
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.Event;
@@ -149,6 +150,5 @@ package com.asokorea.util
 			_output = null;
 			_error = null;
 		}
-		
 	}
 }

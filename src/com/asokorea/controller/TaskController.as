@@ -37,9 +37,14 @@ package com.asokorea.controller
 		{
 			LOG.debug("Open Task", event.taskVo.taskName);
 			var task:TaskVo = event.taskVo;
-			var hostFile:File = new File(task.importHostListFile);
+			
+			if(task && task.importHostListFile)
+			{
+				var hostFile:File = new File(task.importHostListFile);
+				appModel.selectedHostListFile = (task.importHostListFile && hostFile && hostFile.exists) ? hostFile : null;
+			}
+			
 			appModel.selectedTaskVo = task;
-			appModel.selectedHostListFile = (task.importHostListFile && hostFile && hostFile.exists) ? hostFile : null;
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
 		

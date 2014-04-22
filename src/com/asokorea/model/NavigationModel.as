@@ -20,6 +20,7 @@ package com.asokorea.model
 		public static const MAIN_OPEN:String = "OPEN";
 		public static const MAIN_PROCESS:String = "PROCESS";
 		public static const MAIN_BUSY:String = "BUSY";
+		public static const MAIN_UPDATE:String = "UPDATE";
 		
 		public static const PATH_LOGGED_OUT:String 			= "loggedOut";
 		public static const PATH_LOGGED_IN:String 			= "loggedIn";

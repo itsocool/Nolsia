@@ -21,7 +21,7 @@
 					{
 						for each (var host:HostVo in list) 
 						{
-							if(data is HostVo && host.no == data.no)
+							if(data is HostVo && host.ip == HostVo(data).ip)
 							{
 								data.isDefault = true;
 								chkStanard.selected = true;

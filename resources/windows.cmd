@@ -28,9 +28,11 @@ goto END
 	goto END
 	
 :SSH
+	@chcp 65001 > null
 	@set tmp=%~2
 	@set src=%tmp:[_]= %
 	@set taskname=%3
+	
 	.\bin\jre7\bin\java -jar .\bin\MultiSSH.jar "%src%" %taskname%
 	goto END	
 	

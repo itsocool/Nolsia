@@ -24,25 +24,6 @@
 			[Inject]
 			public var model:MainViewPresentationModel;
 
-			[Bindable]
-			public var position:int = 0;
-
-			protected function onChange(event:Event):void
-			{
-				if(chkFixSameLine.selected)
-				{
-//					position = txtOutput.scroller.verticalScrollBar.value;
-				}
-			}
-
-			protected function txtOutput_valueCommitHandler(event:FlexEvent):void
-			{
-				if(chkFixSameLine.selected)
-				{
-//					txtOutput.scroller.verticalScrollBar.value = position;
-				}
-			}
-
 			protected function userCountFunc(item:Object, column:DataGridColumn):String
 			{
 				var result:String = null;
@@ -147,6 +128,13 @@
 								   enabled="false" enabled.PROCESS="true"
 								   icon="{Icons.STOP}"  mouseChildren="false" buttonMode="true"/>
 					</s:HGroup>
+					<s:HGroup verticalAlign="middle" width="100%">
+						<s:RadioButton value="All" groupName="hostFilter" label="All({model.appModel.hostCount})" selected="true" />
+						<s:RadioButton value="Success" groupName="hostFilter" label="Success({model.appModel.successHostCount})" />
+						<s:RadioButton value="Fail" groupName="hostFilter" label="Fail({model.appModel.failHostCount})" />
+						<mx:Spacer width="100%"/>
+						<!--<mx:Button click="model.onGetUser" label="Get Users"/>-->
+					</s:HGroup>
 					<mx:DataGrid id="dgHost" dataProvider="{model.appModel.hostList}" width="100%"
 								 itemClick="onHostClick(event)" height="100%" change="setColumnSort(dgUser, 0)">
 						<mx:columns>
@@ -203,10 +191,8 @@
 				<s:VGroup width="100%" height="75%">
 					<s:HGroup width="100%">
 						<mx:Spacer width="100%"/>
-						<mx:CheckBox id="chkFixSameLine" change="onChange(event)" selected="true" />
 						<mx:LinkButton textAlign="right" icon="{Icons.WRENCH}" label="Settings" enabled="false"/>
 						<mx:LinkButton textAlign="right" icon="{Icons.HELP}" label="Help" enabled="false"/>
-						<!--<mx:LinkButton id="btnClose"  textAlign="right" icon="{Icons.CANCEL}" label="Close Connection" enabled="false"/>-->
 						<mx:LinkButton id="btnUpdate" textAlign="right" icon="{Icons.INFORMATION}" label="Update" click="model.update()"
 									   includeInLayout="{model.appModel.updater.hasUpdate}" visible="{model.appModel.updater.hasUpdate}"/>
 					</s:HGroup>
@@ -221,6 +207,7 @@
 					</mx:DataGrid>
 				</s:VGroup>
 				<panels:TerminalPanel id="terminalPanel" width="100%" height="25%" terminal="{model.appModel.terminalOutput}"/>
+				<panels:TerminalPanel id="errorPanel" width="100%" height="25%" terminal="{model.appModel.standardError}"/>
 			</mx:VDividedBox>
 		</mx:HDividedBox>
 	</s:BorderContainer>

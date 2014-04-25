@@ -7,6 +7,7 @@ package com.asokorea.model.vo
 	
 	import mx.collections.ArrayCollection;
 	import mx.collections.ArrayList;
+	import mx.utils.StringUtil;
 
 	[Bindable]
 	public class HostVo
@@ -62,10 +63,10 @@ package com.asokorea.model.vo
 							var user:UserVo = new UserVo();
 							var arr:Array = matches[i].split(" ");
 							user.no = i + 1;
-							user.userName = arr[1];
-							user.privilege = arr[3];
-							user.secret = arr[5]
-							user.hash = arr[6];
+							user.userName = (arr[1]) ? StringUtil.trim(arr[1]) : null;
+							user.privilege = isNaN(parseInt(arr[3])) ? NaN : parseInt(arr[3]);
+							user.secret = isNaN(parseInt(arr[5])) ? NaN : parseInt(arr[5]);
+							user.hash =(arr[6]) ? StringUtil.trim(arr[6]) : null;
 							userMap[user.userName] = user;
 							userList.addItem(user);
 						}

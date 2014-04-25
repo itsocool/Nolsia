@@ -10,10 +10,10 @@ package com.asokorea.presentation
 	import com.asokorea.model.vo.HostVo;
 	import com.asokorea.model.vo.TaskVo;
 	import com.asokorea.supportclass.FileExtensionFilter;
-	import com.asokorea.supportclass.FileReader;
 	import com.asokorea.supportclass.IFilter;
 	import com.asokorea.util.Global;
 	
+	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
@@ -24,14 +24,6 @@ package com.asokorea.presentation
 	import mx.controls.dataGridClasses.DataGridColumn;
 	import mx.events.ListEvent;
 	
-	/**
-	 * 
-	 * @author developer
-	 */
-	/**
-	 * 
-	 * @author developer
-	 */
 	public class MainViewPresentationModel extends EventDispatcher
 	{
 		[Dispatcher]
@@ -45,9 +37,19 @@ package com.asokorea.presentation
 		[Inject]
 		public var navModel:NavigationModel;
 
-		public function addNewTask():void
+		public function goFirst():void
 		{
-			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.ADD));
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_FIRST;
+		}
+		
+		public function editSettings():void
+		{
+			dispatcher.dispatchEvent(new Event("editSettings"));
+		}
+		
+		public function addNewTask(parentView:DisplayObject):void
+		{
+			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.ADD, null, parentView));
 		}
 		
 		public function taskOpen(task:TaskVo):void

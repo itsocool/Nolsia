@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="370" title="Task Properties">
+	<fx:Script>
+		<![CDATA[
+			import com.asokorea.model.vo.SettingsVo;
+			import com.asokorea.model.vo.TaskVo;
+			
+			private var _settings:SettingsVo;
+			private var _taskVo:TaskVo;
+			
+			[Bindable]
+			public var defaultLogPath:String;
+			
+			public function get taskVo():TaskVo
+			{
+				return _taskVo;
+			}
+
+			[Bindable]
+			public function get settingsVo():SettingsVo
+			{
+				return _settings;
+			}
+			
+			public function set settingsVo(value:SettingsVo):void
+			{
+				_settings = value;
+				defaultLogPath = value.defaultLogDir.nativePath;
+			}
+			
+			protected function browseDir(event:MouseEvent):void
+			{
+				settingsVo.defaultLogDir ||= SettingsVo.DEFAULT_LOG_DIR;
+				settingsVo.defaultLogDir.browseForDirectory("Select Log Dir");
+				settingsVo.defaultLogDir.addEventListener(Event.SELECT, onSelectDir);
+			}
+			
+			protected function onSelectDir(event:Event):void
+			{
+				settingsVo.defaultLogDir.removeEventListener(Event.SELECT, onSelectDir);
+				settingsVo.save();
+			}
+			
+//			protected function onSetDefaultTask(event:IndexChangeEvent):void
+//			{
+//				var taskVo:TaskVo = ddlTask.selectedItem as TaskVo;
+//				
+//				if(taskVo)
+//				{
+//					settingsVo.defaultTask = taskVo.taskName;
+//					settingsVo.save();
+//				}
+//			}
+
+			
+		]]>
+	</fx:Script>
+	<s:layout>
+		<s:VerticalLayout paddingLeft="15" paddingRight="15" paddingTop="10" paddingBottom="10"/>
+	</s:layout>
+	<fx:Declarations>
+		<!--<mx:StringValidator id="valName" required="true" requiredFieldError="Name is required, this can be anything you want." source="{inName}" property="text" />
+		<mx:StringValidator id="valDomain" required="true" requiredFieldError="Host is required (IP address or Domain name)" source="{inHost}" property="text" />
+		<mx:StringValidator id="valPort" required="true" requiredFieldError="Port is required, 22 is default for SSH" source="{inPort}" property="text" />-->
+	</fx:Declarations>
+	<s:Label fontWeight="bold" styleName="InformationLabel" text="Site Information"/>
+<!--	<s:HGroup horizontalAlign="center" width="100%" height="28" styleName="formElement" verticalAlign="middle">
+		<s:Label text="Name"/>
+		<s:TextInput maxChars="40" text="{settingsVo.name}" id="inName" width="100%"/>
+	</s:HGroup>	
+	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+		<s:Label text="Web Root"/>
+		<s:TextInput  text="{connection.root}" restrict="a-zA-Z0-9~/\-_\\.:" id="inRoot" width="100%"/>
+	</s:HGroup>
+	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+		<s:Label text="URI" />
+		<s:TextInput text="{connection.uri}" id="inURI" width="100%" restrict="a-zA-Z0-9~/\-_\\:."   />
+	</s:HGroup> 
+	<s:Label fontWeight="bold" styleName="InformationLabel" text="Connection Information"/>
+	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+		<s:Label text="Host"/>
+		<s:TextInput text="{connection.host}" id="inHost" restrict="a-zA-Z0-9~/\-_\\:." width="100%"  />
+		<s:Label text="Port" />
+		<s:TextInput text="{connection.port}" restrict="0-9" id="inPort" width="40" />
+	</s:HGroup>
+	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+		<s:Label text="Path to Drush" />
+		<s:TextInput text="{connection.drushpath}" restrict="a-zA-Z0-9~/\-_\\.:"  id="inDrushPath" width="100%"   />
+	</s:HGroup>
+	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+		<s:Label text="Key File"/>
+		<s:Label id="identity" width="100%" text="{connection.identity}"/>
+		<mx:Image click="browse();"  width="16" height="16" source="{Icons.MAGNIFIER}" buttonMode="true" />
+	</s:HGroup>
+	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+		<s:Label text="User"/>
+		<s:TextInput text="{connection.username}" restrict="a-zA-Z0-9~/\-_\\." id="inUser" width="100%"  />
+	</s:HGroup>
+	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+		<s:Label text="Password"/>
+		<s:TextInput text="{connection.password}" id="inPassword" displayAsPassword="true" width="100%"  />
+	</s:HGroup>
+	
+	<s:HGroup horizontalAlign="right" width="100%" >
+		<mx:Button icon="{Icons.DISK}" click="save();"   label="Save" id="btnSave"/>
+		<mx:Button icon="{Icons.CANCEL}" click="close();"   label="Cancel"  id="btnCancel"/>
+	</s:HGroup>-->	
+
+</s:TitleWindow>

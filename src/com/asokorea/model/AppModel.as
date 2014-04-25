@@ -41,5 +41,11 @@ package com.asokorea.model
 		public var standardError:String;
 		
 		public var updater:NativeUpdater;
+		
+		public var hostCount:int = 0;
+
+		public var successHostCount:int = 0;
+
+		public var failHostCount:int = 0;
 	}
 }

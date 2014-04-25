@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+		xmlns:controls="controls.*" width="12" height="12"
+		alpha.disabled="0" xmlns:components="com.asokorea.view.components.*" > 
+	
+	<!-- host component -->
+	<fx:Metadata>
+		<![CDATA[ 
+		/** 
+		* @copy spark.skins.spark.ApplicationSkin#hostComponent
+		*/
+		[HostComponent("com.asokorea.view.components.QuickHelp")]
+		]]>
+	</fx:Metadata> 
+	
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="disabled" />
+		<s:State name="open" />
+	</s:states>
+	<s:transitions>
+		<s:Transition fromState="normal" toState="open">
+			<s:Fade target="{helpArea}" alphaFrom="0" alphaTo="1" duration="300"/>
+		</s:Transition>
+		<s:Transition fromState="open" toState="normal">
+			<s:Fade target="{helpArea}" alphaFrom="1" alphaTo="0" duration="200"/>
+		</s:Transition>
+	</s:transitions>
+	
+	
+	<s:PopUpAnchor id="popUp" displayPopUp.normal="false" displayPopUp.open="true" includeIn="open"
+				   top="0" bottom="0"
+				   popUpWidthMatchesAnchorWidth="false"
+				   popUpPosition="right" >
+		
+		<s:BorderContainer id="helpArea" minHeight="30" width="100%" maxWidth="180"  cornerRadius="5">
+			<s:borderStroke>
+				<s:SolidColorStroke weight="1" color="0x9FCBFF"/>
+			</s:borderStroke>
+			<s:layout>
+				<s:VerticalLayout horizontalAlign="right" verticalAlign="middle" paddingLeft="10" paddingRight="15" paddingTop="15" paddingBottom="10"/>
+			</s:layout>
+			<s:Label id="helpText" width="100%" />          
+			<s:Group id="close" width="12" height="12">
+				<s:Label buttonMode="true" text="X" styleName="help"/>
+			</s:Group>                      
+		</s:BorderContainer>
+		
+	</s:PopUpAnchor>
+	
+	<s:Group id="target" width="100%" height="100%">
+		<s:Label styleName="help" text="?" />
+	</s:Group>
+	
+	
+</s:Skin>

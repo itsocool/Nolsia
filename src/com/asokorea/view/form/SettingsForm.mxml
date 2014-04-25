@@ -1,43 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:TitleWindow title="Edit Settings" xmlns:fx="http://ns.adobe.com/mxml/2009"
-		  xmlns:s="library://ns.adobe.com/flex/spark" 
-		  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:components="org.drushpal.view.components.*"  width.normal="370" height.normal="176">
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:components="com.asokorea.view.components.*"
+			   width="450" height="180" title="Edit Settings">
 	<fx:Script>
 		<![CDATA[		
+			import com.asokorea.model.enum.Icons;
 			import com.asokorea.model.vo.SettingsVo;
+			import com.asokorea.model.vo.TaskVo;
 			
+			import mx.collections.ArrayCollection;
 			import mx.events.CloseEvent;
+			
+			import spark.events.IndexChangeEvent;
+
 			public static const EVENT_SAVE_SETTINGS:String = "saveSettings";
 			
+			private var _settings:SettingsVo;
+			
 			[Bindable]
-			public var settings:SettingsVo;
-			private function close():void{
-				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));		
+			public var defaultLogPath:String;
+			
+			[Bindable]
+			public function get settingsVo():SettingsVo
+			{
+				return _settings;
 			}
+
+			public function set settingsVo(value:SettingsVo):void
+			{
+				_settings = value;
+				defaultLogPath = value.defaultLogDir.nativePath;
+			}
+
+			protected function browseDir(event:MouseEvent):void
+			{
+				settingsVo.defaultLogDir ||= SettingsVo.DEFAULT_LOG_DIR;
+				settingsVo.defaultLogDir.browseForDirectory("Select Log Dir");
+				settingsVo.defaultLogDir.addEventListener(Event.SELECT, onSelectDir);
+			}
+			
+			protected function onSelectDir(event:Event):void
+			{
+				settingsVo.defaultLogDir.removeEventListener(Event.SELECT, onSelectDir);
+				settingsVo.save();
+			}
+			
+			protected function onSetDefaultTask(event:IndexChangeEvent):void
+			{
+				var taskVo:TaskVo = ddlTask.selectedItem as TaskVo;
+				
+				if(taskVo)
+				{
+					settingsVo.defaultTask = taskVo.taskName;
+					settingsVo.save();
+				}
+			}
+			
 		]]>
 	</fx:Script>
-	<s:states>
-		<s:State name="normal"/>
-		<s:State name="disabled"/>
-	</s:states>
 	<s:layout>
-		<s:VerticalLayout paddingLeft="15" paddingRight="15" paddingTop="10" paddingBottom="10"/>
+		<s:VerticalLayout verticalAlign="middle" paddingLeft="15" paddingRight="15" paddingTop="10" paddingBottom="10"/>
 	</s:layout>
-	<s:Label text="General Settings" styleName.normal="InformationLabel" fontWeight.normal="bold"/>
+	<s:Label fontWeight="bold" styleName="InformationLabel" text="General Settings"/>
 	<s:HGroup horizontalAlign="center" width="100%" height="28" styleName="formElement" verticalAlign="middle">
-		<s:Label text="Open links in default external browser" width="100%"/>
-		<s:CheckBox selected="{settings.openInExternalBrowser}" id="chkOpenInExtBrowser" click="{dispatchEvent(new Event(EVENT_SAVE_SETTINGS))}" />
-		<components:QuickHelp text="By default DrushPal opens links in its built in browser, selecting this option will open links in your default browser."/>
+		<s:Label x="35" width="125" text="Default  Log Directory"/>
+		<s:TextInput editable="false" width="100%" prompt="select default log dir" text="{defaultLogPath}" /> 
+		<s:Button width="18" height="18" click="browseDir(event)" icon="{Icons.FOLDER_EXPLORE}"/>
 	</s:HGroup>	
 	<s:HGroup horizontalAlign="center" width="100%" height="28" styleName="formElement" verticalAlign="middle">
-		<s:Label text="Notify me about updating the projects cache" width="100%"/>
-		<s:CheckBox selected="{settings.updateRepoNotification}" id="chkUpdateRepoNotification" click="{dispatchEvent(new Event(EVENT_SAVE_SETTINGS))}" />
-		<components:QuickHelp text="DrushPal stores a local copy of all of Drupal.org's projects to increase speed when the data is needed. If the cache is outdated, checking this will nofity the user."/>
+		<s:Label text="Default Task" width="125"/>
+		<s:DropDownList id="ddlTask" width="100%" dataProvider="{settingsVo.tasks}" labelField="taskName" change="onSetDefaultTask(event)" requireSelection="true" />
 	</s:HGroup>	
 	
 	<s:HGroup horizontalAlign="right" width="100%" >
-		<mx:Button icon="{Icons.CANCEL}" click="close();"   label="Close"  id="btnCancel"/>
+		<s:Button icon="{Icons.CANCEL}" click="closeButton_clickHandler(event)" label="Close"  id="btnCancel"/>
 	</s:HGroup>	
-	
-	
 </s:TitleWindow>

@@ -191,8 +191,9 @@
 				<s:VGroup width="100%" height="75%">
 					<s:HGroup width="100%">
 						<mx:Spacer width="100%"/>
-						<mx:LinkButton textAlign="right" icon="{Icons.WRENCH}" label="Settings" enabled="false"/>
-						<mx:LinkButton textAlign="right" icon="{Icons.HELP}" label="Help" enabled="false"/>
+						<mx:LinkButton textAlign="right" icon="{Icons.SERVER_GO}" label="Task List" click="model.goFirst()"/>
+						<mx:LinkButton textAlign="right" icon="{Icons.WRENCH}" label="Settings" click="model.editSettings()"/>
+						<!--<mx:LinkButton textAlign="right" icon="{Icons.HELP}" label="Help" enabled="false"/>-->
 						<mx:LinkButton id="btnUpdate" textAlign="right" icon="{Icons.INFORMATION}" label="Update" click="model.update()"
 									   includeInLayout="{model.appModel.updater.hasUpdate}" visible="{model.appModel.updater.hasUpdate}"/>
 					</s:HGroup>

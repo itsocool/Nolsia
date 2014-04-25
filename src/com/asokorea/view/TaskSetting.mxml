@@ -66,10 +66,10 @@
 		<s:VerticalLayout paddingLeft="10" paddingTop="10" paddingRight="10" paddingBottom="10"/>
 	</s:layout>
 	<s:HGroup width="100%">
-		<mx:Button label="Add Connection" icon="{Icons.ADD}" click="model.addNewTask()"/>
+		<mx:Button label="Add Connection" icon="{Icons.ADD}" click="model.addNewTask(this.parent)"/>
 		<mx:Spacer width="100%"/>
-		<mx:LinkButton textAlign="right" icon="{Icons.WRENCH}" label="Settings" enabled="false"/>
-		<mx:LinkButton textAlign="right" icon="{Icons.HELP}" label="Help" enabled="false"/>
+		<!--<mx:LinkButton textAlign="right" icon="{Icons.WRENCH}" label="Settings" enabled="false"/>
+		<mx:LinkButton textAlign="right" icon="{Icons.HELP}" label="Help" enabled="false"/>-->
 	</s:HGroup>
 	<s:List id="listConnections" dataProvider="{dataProvider}" labelField="description"  width="100%" height="100%"
 			click="listConnections_clickHandler(event)"

@@ -23,8 +23,7 @@
 	<!-- Application level model and controller.
 	Handle login, hold the state and user of the application -->
 	<model:AppModel id="appModel" xmlns:model="com.asokorea.model.*" />
-
-	<supportclass:FileReader xmlns:supportclass="com.asokorea.supportclass.*" />
+	<model:TaskModel id="taskModel" xmlns:model="com.asokorea.model.*" />
 
 	<controller:AppController xmlns:controller="com.asokorea.controller.*" />
 	<controller:TaskController xmlns:controller="com.asokorea.controller.*" />

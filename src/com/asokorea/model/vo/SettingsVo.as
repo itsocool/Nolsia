@@ -13,22 +13,27 @@ package com.asokorea.model.vo
 		public var tasks:ArrayCollection;
 		public var defaultLogDir:File = File.userDirectory.resolvePath("logs");
 		
-		public static var SETTING_FILE:File = File.userDirectory.resolvePath("task/settings.xml");
-		public static var DEFAULT_LOG_DIR:File = File.userDirectory.resolvePath("logs");
+		public static const SETTING_FILE:File = File.userDirectory.resolvePath("task/settings.xml");
+		public static const DEFAULT_LOG_DIR:File = File.userDirectory.resolvePath("logs");
 		
 		private var settingXml:XML = null;
 		
 		public function SettingsVo()
 		{
+			if(!DEFAULT_LOG_DIR.exists || !DEFAULT_LOG_DIR.isDirectory)
+			{
+				DEFAULT_LOG_DIR.createDirectory();
+				DEFAULT_LOG_DIR.load();
+			}
+			
 			if(!SETTING_FILE.exists)
 			{
 				var file:File = File.applicationDirectory.resolvePath("templete/task");
 				file.copyTo(File.userDirectory.resolvePath("task"));
-				SETTING_FILE = File.userDirectory.resolvePath("task/settings.xml");
+				SETTING_FILE.load();
 			}
 			
 			settingXml = Global.readXml(SETTING_FILE); 
-//			settingXml..taskBaseDir[0] = Global.cdata(file.resolvePath("_default_").nativePath);
 			
 			if(settingXml is XML && settingXml..taskRef is XMLList)
 			{
@@ -80,7 +85,7 @@ package com.asokorea.model.vo
 			{
 				var settingsXmlFile:File = File.applicationDirectory.resolvePath("templete/task/settings.xml");
 				settingsXmlFile.copyTo(File.userDirectory.resolvePath("task/settings.xml"));
-				SETTING_FILE = File.userDirectory.resolvePath("task/settings.xml");
+				SETTING_FILE.load();
 				
 				if(!DEFAULT_LOG_DIR.exists || !DEFAULT_LOG_DIR.isDirectory)
 				{

@@ -69,7 +69,7 @@ package com.asokorea.presentation
 		
 		public function browseHostList():void
 		{
-			var e:FileEventEX = new FileEventEX(FileEventEX.HOSTLIST_FILE_BROWSE, appModel.selectedHostListFile);
+			var e:FileEventEX = new FileEventEX(FileEventEX.HOSTLIST_FILE_BROWSE, appModel.excel2Xml.excelFile);
 			dispatcher.dispatchEvent(e);
 		}
 
@@ -82,14 +82,14 @@ package com.asokorea.presentation
 		
 		public function loadHostList():void
 		{
-			var e:FileEventEX = new FileEventEX(FileEventEX.HOSTLIST_FILE_LOAD, appModel.selectedHostListFile);
+			var e:FileEventEX = new FileEventEX(FileEventEX.HOSTLIST_FILE_LOAD, appModel.excel2Xml.excelFile);
 			dispatcher.dispatchEvent(e);
 		}
 		
 		public function clearHostList():void
 		{
-			appModel.hostList = null;
-			appModel.hasHostList = false;
+			appModel.excel2Xml.hostList = null;
+			appModel.excel2Xml.hasHostList = false;
 		}
 		
 		public function start():void

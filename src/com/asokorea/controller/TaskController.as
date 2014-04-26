@@ -7,6 +7,7 @@ package com.asokorea.controller
 	import com.asokorea.model.vo.SettingsVo;
 	import com.asokorea.model.vo.TaskVo;
 	import com.asokorea.supportclass.LOG;
+	import com.asokorea.util.Excel2Xml;
 	import com.asokorea.view.form.SettingsForm;
 	import com.asokorea.view.form.TaskForm;
 	
@@ -70,10 +71,15 @@ package com.asokorea.controller
 			if(task && task.importHostListFile)
 			{
 				var hostFile:File = new File(task.importHostListFile);
-				appModel.selectedHostListFile = (task.importHostListFile && hostFile && hostFile.exists) ? hostFile : null;
+				
+				appModel.selectedTaskVo = task;
+				
+				if(task.importHostListFile && hostFile && hostFile.exists)
+				{
+					appModel.excel2Xml = new Excel2Xml(task, hostFile);
+				}
 			}
 			
-			appModel.selectedTaskVo = task;
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
 		

@@ -31,6 +31,7 @@ package com.asokorea.util
 		
 		private var cmdFile:File = File.applicationDirectory.resolvePath("windows.cmd");
 		private var consoleEncoding:String = "EUC-KR";
+		
 		private var _output:String = "";
 		private var _error:String = "";
 		private var _totalOutput:String = "";

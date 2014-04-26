@@ -116,12 +116,12 @@
 								   enabled.PROCESS="false"/>
 						<mx:Button id="btnHostListDelete" label="Clear"
 								   click="model.clearHostList()"
-								   enabled="{!!model.appModel.hasHostList}" icon="{Icons.DELETE}"
+								   enabled="{!!model.appModel.excel2Xml.hasHostList}" icon="{Icons.DELETE}"
 								   mouseChildren="false" buttonMode="true"
 								   enabled.PROCESS="false"/>
 						<mx:Spacer width="100%"/>
 						<mx:Button id="btnStartLoop" label="Start" click="model.start()"
-								   enabled="{!(!model.appModel.hostList || !model.appModel.hostList.length)}" icon="{Icons.SERVER_GO}"
+								   enabled="{!(!model.appModel.excel2Xml.hostList || !model.appModel.excel2Xml.hostList.length)}" icon="{Icons.SERVER_GO}"
 								   mouseChildren="false" buttonMode="true"
 								   enabled.PROCESS="false"/>
 						<mx:Button id="btnStopLoop" label="Stop" click="model.stop()"
@@ -129,13 +129,13 @@
 								   icon="{Icons.STOP}"  mouseChildren="false" buttonMode="true"/>
 					</s:HGroup>
 					<s:HGroup verticalAlign="middle" width="100%">
-						<s:RadioButton value="All" groupName="hostFilter" label="All({model.appModel.hostCount})" selected="true" />
+						<s:RadioButton value="All" groupName="hostFilter" label="All({model.appModel.excel2Xml.hostCount})" selected="true" />
 						<s:RadioButton value="Success" groupName="hostFilter" label="Success({model.appModel.successHostCount})" />
 						<s:RadioButton value="Fail" groupName="hostFilter" label="Fail({model.appModel.failHostCount})" />
 						<mx:Spacer width="100%"/>
 						<!--<mx:Button click="model.onGetUser" label="Get Users"/>-->
 					</s:HGroup>
-					<mx:DataGrid id="dgHost" dataProvider="{model.appModel.hostList}" width="100%"
+					<mx:DataGrid id="dgHost" dataProvider="{model.appModel.excel2Xml.hostList}" width="100%"
 								 itemClick="onHostClick(event)" height="100%" change="setColumnSort(dgUser, 0)">
 						<mx:columns>
 							<mx:DataGridColumn headerText="Open" width="40" textAlign="right">

@@ -1,6 +1,9 @@
 package com.asokorea.util
 {
 	import com.asokorea.model.enum.ExternalCommandType;
+	import com.asokorea.model.vo.HostVo;
+	import com.asokorea.model.vo.SettingsVo;
+	import com.asokorea.model.vo.TaskVo;
 	
 	import flash.desktop.NativeApplication;
 	import flash.desktop.NativeProcess;
@@ -11,144 +14,237 @@ package com.asokorea.util
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
+	import flash.filesystem.FileStream;
 	import flash.net.FileFilter;
+	import flash.utils.Dictionary;
 	import flash.xml.XMLDocument;
+	
+	import mx.collections.ArrayCollection;
 
-	[Event(name="init", type="flash.events.Event")]
 	[Event(name="complete", type="flash.events.Event")]
-	[Event(name="standardErrorClose", type="flash.events.Event")]
+	[Event(name="error", type="flash.events.Event")]
 	[Event(name="notFoundJava", type="flash.events.Event")]
-	public class Excel2Xml extends EventDispatcher
+	public class Excel2Xml extends NativeProcess
 	{
-		static public const NOT_FOUND_JAVA:String = "[Not found java]";
-		static public var hostFileTypeFilter:Array = [
-			new FileFilter("Excel File (*.xls;*.xlsx)", "*.xls;*.xlsx")
-			, new FileFilter("Text File (*.txt;*.xml;*.json,*.csv)", "*.txt;*.xml;*.json,*.csv")
-			, new FileFilter("All File", "*.*")
-		];
+		static public const NO_JAVA:String = "[Not found java]";
+		static public const hostFileTypeFilter:Array=[new FileFilter("All File", "*.*"), new FileFilter("Excel File (*.xls;*.xlsx)", "*.xls;*.xlsx"), new FileFilter("Text File (*.txt;*.xml;*.json,*.csv)", "*.txt;*.xml;*.json,*.csv")];
+		static public const fileFilters:Array=[new FileFilter("All File", "*.*"), new FileFilter("Log File (*.txt;*.log)", "*.txt;*.log")];
 		
-		public var cmdFile:File;
-		public var excelFile:File;
-		public var xml:XMLDocument;
-		public var consoleEncoding:String = "EUC-KR";
+		private var cmdFile:File = File.applicationDirectory.resolvePath("windows.cmd");;
+		private var consoleEncoding:String = "EUC-KR";
 		
-		private var process:NativeProcess;
-		private var _output:String = "";
-		private var _error:String = "";
-		private var saveXml:Boolean = false;
-		private var useJar:Boolean = false;
+		private var _excelFile:File;
+		private var _xmlFile:File;
+		private var _xml:XML;
+		private var output:String = "";
+		private var error:String = "";
+		
+		private var _hostMap:Dictionary = new Dictionary();
+		private var _hostList:ArrayCollection = new ArrayCollection();
 
+		private var taskVo:TaskVo;
+		
 		[Bindable]
-		public function get output():String
-		{
-			return _output;
-		}
-
-		public function set output(value:String):void
-		{
-			_output = value;
-		}
-
+		public var hasHostList:Boolean;
+		
 		[Bindable]
-		public function get error():String
-		{
-			return _error;
-		}
+		public var hostCount:int = 0;
 
-		public function set error(value:String):void
+		public function Excel2Xml(taskVo:TaskVo, excelFile:File, cmdFile:File = null):void
 		{
-			_error = value;
-		}
+			super();
 
-		public function init(excelFile:File, useJar:Boolean = true):void
-		{
-			this.useJar = useJar;
-			this.cmdFile = File.applicationDirectory.resolvePath("windows.cmd");
+			this.taskVo = taskVo;
 			this.excelFile = excelFile;
-			dispatchEvent(new Event(Event.INIT, true));
+			
+			if(cmdFile && cmdFile.exists && !cmdFile.isDirectory)
+			{
+				this.cmdFile = cmdFile;	
+			}
 		}
 		
-		public function convertXML(saveXml:Boolean = false):void
+		public function get xml():XML
 		{
-			this.saveXml = saveXml;
+			return _xml;
+		}
+
+		[Bindable]
+		public function get xmlFile():File
+		{
+			return _xmlFile;
+		}
+
+		public function set xmlFile(value:File):void
+		{
+			_xmlFile = value;
+		}
+
+		[Bindable]
+		public function get excelFile():File
+		{
+			return _excelFile;
+		}
+
+		public function set excelFile(value:File):void
+		{
+			_excelFile = value;
+		}
+
+		[Bindable]
+		public function get hostList():ArrayCollection
+		{
+			return _hostList;
+		}
+
+		public function set hostList(value:ArrayCollection):void
+		{
+			hasHostList = false;
+			
+			if(value && value.length > 0)
+			{
+				_hostMap = new Dictionary();
+				
+				for each (var hostVo:HostVo in value) 
+				{
+					_hostMap[hostVo.ip] = hostVo;						
+				}
+				
+				hasHostList = true;
+			}
+			
+			_hostList = value;
+		}
+
+		public function get hostMap():Dictionary
+		{
+			return _hostMap;
+		}
+
+		public function execute():void
+		{
 			var nativeProcessStartupInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			var processArgs:Vector.<String>=new Vector.<String>();
+			var processArgs:Vector.<String> = new Vector.<String>();
 
 			processArgs.push(ExternalCommandType.EXCEL);
 			processArgs.push(excelFile.nativePath.replace(/ /g,"[_]"));
 			
 			nativeProcessStartupInfo.executable = cmdFile;
 			nativeProcessStartupInfo.arguments = processArgs;
-			process = new NativeProcess();
-			process.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
-			process.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
-			process.addEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onIOErrorData);
-			process.addEventListener(NativeProcessExitEvent.EXIT, onExit);
-			process.start(nativeProcessStartupInfo);
+			
+			addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
+			addEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
+			addEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onIOErrorData);
+			addEventListener(NativeProcessExitEvent.EXIT, onExit);
+			start(nativeProcessStartupInfo);
 		}
 		
 		protected function onOutputData(event:ProgressEvent):void
 		{
-			if(process && process.running){				
+			if(standardOutput && standardOutput.bytesAvailable)
+			{
+				output += standardOutput.readMultiByte(standardOutput.bytesAvailable,consoleEncoding);
+			}
 				
-				if(process.standardOutput && process.standardOutput.bytesAvailable)
-				{
-					_output += process.standardOutput.readMultiByte(process.standardOutput.bytesAvailable,consoleEncoding);
-				}
-				
-				if(_output && _output.indexOf(NOT_FOUND_JAVA) > -1)
-				{
-					dispatchEvent(new Event("notFoundJava"));
-				}
+			if(output && output.indexOf(NO_JAVA) > -1)
+			{
+				dispatchEvent(new Event("notFoundJava"));
 			}
 		}
 		
 		protected function onErrorData(event:ProgressEvent):void
 		{
-			if(process && process.running){				
-				if(process.standardError && process.standardError.bytesAvailable)
-				{
-					_error += process.standardError.readMultiByte(process.standardError.bytesAvailable,consoleEncoding);
-				}
-				
-				if(_error && _error.indexOf(NOT_FOUND_JAVA) > -1)
-				{
-					dispatchEvent(new Event("notFoundJava"));
-				}
-			}			
-		}
-		
-		protected function onExit(event:NativeProcessExitEvent):void
-		{
-			xml = new XMLDocument(_output);
-			process.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
-			process.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
-			process.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onIOErrorData);
-			process.removeEventListener(NativeProcessExitEvent.EXIT, onExit);
-			dispatchEvent(new Event(Event.COMPLETE, true));
+			if(standardError && standardError.bytesAvailable)
+			{
+				error += standardError.readMultiByte(standardError.bytesAvailable,consoleEncoding);
+			}
+			
+			if(error && error.indexOf(NO_JAVA) > -1)
+			{
+				dispatchEvent(new Event("notFoundJava"));
+			}
 		}
 		
 		protected function onIOErrorData(event:IOErrorEvent):void
 		{
-			trace(event.errorID);
-			process.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
-			process.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
-			process.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onIOErrorData);
-			process.removeEventListener(NativeProcessExitEvent.EXIT, onExit);
+			removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
+			removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
+			removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onIOErrorData);
+			removeEventListener(NativeProcessExitEvent.EXIT, onExit);
 			dispatchEvent(new Event(Event.STANDARD_ERROR_CLOSE));
+		}		
+		
+		protected function onExit(event:NativeProcessExitEvent):void
+		{
+			removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
+			removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
+			removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onIOErrorData);
+			removeEventListener(NativeProcessExitEvent.EXIT, onExit);
+
+			getHostList();
 		}
 		
+		private function getHostList():void
+		{
+			_xml = new XML(output);
+
+			if (_xml is XML)
+			{
+				xmlFile = File.userDirectory.resolvePath(taskVo.taskBaseDir + "/hostList.xml");
+				Global.saveXml(_xml, xmlFile);
+				
+				var vo:HostVo = null;
+
+				_hostMap = new Dictionary();
+				_hostList = new ArrayCollection();
+				
+				for (var i:int=0; i < _xml.sheet[0].row.length(); i++)
+				{
+					var row:Object = _xml.sheet[0].row[i];
+					
+					if(row && row.col && row.col[0].toString() && row.col[1].toString() && row.col[2].toString())
+					{
+						vo = new HostVo();
+						vo.no = i + 1;
+						vo.ip = row.col[0].toString();
+						
+						if(!vo.ip || vo.ip.search(/(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/) < 0)
+						{
+							continue;
+						}
+						
+						vo.user = row.col[1].toString() || taskVo.ssh.user;
+						vo.password = row.col[2].toString() || taskVo.ssh.password;
+						vo.port ||= 22;
+						vo.taskName = taskVo.taskName;
+						_hostMap[vo.ip] = vo;
+						_hostList.addItem(vo);
+					}
+				}
+				
+				if(_hostList && _hostList.length > 0)
+				{
+					hasHostList = true;
+					hostCount = _hostList.length;
+				}else
+				{
+					hasHostList = false;
+					hostCount = 0;
+				}
+			}
+
+			dispatchEvent(new Event(Event.COMPLETE, true));
+		}
+
 		public function dispose():void
 		{
 			if(cmdFile)	cmdFile = null;
 			if(excelFile) excelFile = null;
-			if(xml) xml = null;
-			if(process){
-				if(process.running) process.exit(true);
-				process = null;
-			}
-			_output = null;
-			_error = null;
+			if(_xml) _xml = null;
+
+			output = null;
+			error = null;
+			
+			exit(true);
 		}
 	}
 }

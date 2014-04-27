@@ -3,15 +3,18 @@
 			   xmlns:s="library://ns.adobe.com/flex/spark"
 			   xmlns:mx="library://ns.adobe.com/flex/mx"
 			   xmlns:components="com.asokorea.view.components.*"
-			   width="450" height="180" title="Edit Settings">
+			   width="450" height="180" title="Edit Settings" 
+			   close="close(event)">
 	<fx:Script>
 		<![CDATA[		
+			import com.asokorea.model.AppModel;
 			import com.asokorea.model.enum.Icons;
 			import com.asokorea.model.vo.SettingsVo;
 			import com.asokorea.model.vo.TaskVo;
 			
 			import mx.collections.ArrayCollection;
 			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
 			
 			import spark.events.IndexChangeEvent;
 
@@ -36,7 +39,7 @@
 
 			protected function browseDir(event:MouseEvent):void
 			{
-				settingsVo.defaultLogDir ||= SettingsVo.DEFAULT_LOG_DIR;
+				settingsVo.defaultLogDir ||= settingsVo.defaultLogDir;
 				settingsVo.defaultLogDir.browseForDirectory("Select Log Dir");
 				settingsVo.defaultLogDir.addEventListener(Event.SELECT, onSelectDir);
 			}
@@ -53,9 +56,14 @@
 				
 				if(taskVo)
 				{
-					settingsVo.defaultTask = taskVo.taskName;
+					settingsVo.defaultTaskName = taskVo.taskName;
 					settingsVo.save();
 				}
+			}
+			
+			protected function close(event:Event):void
+			{
+				PopUpManager.removePopUp(this);
 			}
 			
 		]]>
@@ -71,10 +79,10 @@
 	</s:HGroup>	
 	<s:HGroup horizontalAlign="center" width="100%" height="28" styleName="formElement" verticalAlign="middle">
 		<s:Label text="Default Task" width="125"/>
-		<s:DropDownList id="ddlTask" width="100%" dataProvider="{settingsVo.tasks}" labelField="taskName" change="onSetDefaultTask(event)" requireSelection="true" />
+		<s:DropDownList id="ddlTask" width="100%" dataProvider="{settingsVo.taskList}" labelField="taskName" change="onSetDefaultTask(event)" requireSelection="true" />
 	</s:HGroup>	
 	
 	<s:HGroup horizontalAlign="right" width="100%" >
-		<s:Button icon="{Icons.CANCEL}" click="closeButton_clickHandler(event)" label="Close"  id="btnCancel"/>
+		<s:Button icon="{Icons.CANCEL}" click="close(event)" label="Close"  id="btnCancel"/>
 	</s:HGroup>	
 </s:TitleWindow>

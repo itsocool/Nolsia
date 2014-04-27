@@ -2,6 +2,7 @@
 <task>
 	<taskName>_default_</taskName>
 	<description><![CDATA[Default Task]]></description>
+	<taskBaseDir/>
 	<importHostListFile/>
 	<exportedHostListFile/>
 	<logPath/>

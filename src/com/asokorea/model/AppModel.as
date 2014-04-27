@@ -3,6 +3,8 @@ package com.asokorea.model
 	import com.asokorea.model.vo.SettingsVo;
 	import com.asokorea.model.vo.TaskVo;
 	import com.asokorea.supportclass.NativeUpdater;
+	import com.asokorea.util.Excel2Xml;
+	import com.asokorea.util.MultiSSH;
 	
 	import flash.filesystem.File;
 	import flash.net.FileFilter;
@@ -24,19 +26,15 @@ package com.asokorea.model
 
 		public var fileFilters:Array=[new FileFilter("All File", "*.*"), new FileFilter("Log File (*.txt;*.log)", "*.txt;*.log")];
 
-		public var hostList:ArrayCollection;
-
 		public var settingsVo:SettingsVo;
 
-		public var lastTaskName:String;
-		
 		public var selectedTaskVo:TaskVo;
 		
 		public var hasHostList:Boolean;
 		
 		public var message:String;
 		
-		public var terminalOutput:String;
+		public var standardOutput:String;
 		
 		public var standardError:String;
 		
@@ -47,5 +45,9 @@ package com.asokorea.model
 		public var successHostCount:int = 0;
 
 		public var failHostCount:int = 0;
+		
+		public var excel2Xml:Excel2Xml;
+		
+		public var multiSSH:MultiSSH;
 	}
 }

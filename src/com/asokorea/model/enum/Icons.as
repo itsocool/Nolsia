@@ -54,6 +54,9 @@ package com.asokorea.model.enum
 		[Embed(source="assets/icons/monitor_go.png")]
 		public static const MONITOR_GO:Class;
 
+		[Embed(source="assets/icons/page_excel.png")]
+		public static const PAGE_EXCEL:Class;
+
 		[Embed(source="assets/icons/page_white_go.png")]
 		public static const PAGE_WHITE_GO:Class;
 
@@ -71,6 +74,9 @@ package com.asokorea.model.enum
 
 		[Embed(source="assets/icons/stop.png")]
 		public static const STOP:Class;
+
+		[Embed(source="assets/icons/tick.png")]
+		public static const TICK:Class;
 
 		[Embed(source="assets/icons/wrench.png")]
 		public static const WRENCH:Class;

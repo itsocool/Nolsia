@@ -25,11 +25,13 @@
 
 		]]>
 	</fx:Script>
-	<mx:Image click="onClick(event)" id="btnOpen" width="16" height="16" source="{Icons.MONITOR_GO}" mouseChildren="false" buttonMode="true" />
-	<s:Label click="onClick(event)" id="btnName" width="120" toolTip="{data.taskName}" text="{data.taskName}"
-			 mouseChildren="false" buttonMode="true" verticalAlign="middle" textAlign="left" fontWeight="bold" fontSize="14" />
+	<s:HGroup id="grpOpen" click="onClick(event)" mouseChildren="false" buttonMode="true">
+		<mx:Image id="btnOpen" width="16" height="16" source="{Icons.MONITOR_GO}" mouseEnabled="false" buttonMode="false" />
+		<s:Label id="lblName" width="120" toolTip="{data.taskName}" text="{data.taskName}"
+				 mouseEnabled="false" buttonMode="false" verticalAlign="middle" textAlign="left" fontWeight="bold" fontSize="14" />
+	</s:HGroup>
 	<s:Label click="onClick(event)" id="btnLabel" text="{data.description}" toolTip="{data.description}" width="100%"
-			 textAlign="right" verticalAlign="middle" color="#4C4C4C" fontSize="12" fontStyle="italic"/>
+				 textAlign="right" verticalAlign="middle" color="#4C4C4C" fontSize="12" fontStyle="italic"/>
 	<mx:Image click="onClick(event)" id="btnEdit" toolTip="Edit" width="16" height="16" source="{Icons.PENCIL}" mouseChildren="false" buttonMode="true" />		
 	<mx:Image click="onClick(event)" id="btnDelete" toolTip="Delete" width="16" height="16" source="{Icons.DELETE}" mouseChildren="false" buttonMode="true" />
 </s:ItemRenderer>

@@ -11,13 +11,11 @@
 			import com.asokorea.model.enum.Icons;
 			import com.asokorea.model.vo.HostVo;
 			import com.asokorea.presentation.MainViewPresentationModel;
-			
+
 			import mx.collections.ArrayCollection;
 			import mx.collections.IList;
 			import mx.collections.Sort;
-			import mx.core.UIComponent;
 			import mx.events.DataGridEvent;
-			import mx.events.FlexEvent;
 			import mx.events.ListEvent;
 
 			[Bindable]
@@ -35,34 +33,34 @@
 
 				return result;
 			}
-			
+
 			protected function setColumnSort(dataGrid:DataGrid, colIndex:int, sortDescending:Boolean = false):void
 			{
 				var list:ArrayCollection = dataGrid.dataProvider as ArrayCollection;
 				var col:DataGridColumn = dataGrid.columns[colIndex] as DataGridColumn;
-				
+
 				if(!(list.sort is Sort) || col.sortDescending == !sortDescending)
 				{
 					dataGrid.validateNow();
 					dataGrid.dispatchEvent(new DataGridEvent(DataGridEvent.HEADER_RELEASE, false,true,colIndex,null,0,null,null,0));
 				}
 			}
-				
+
 			protected function onHostClick(event:ListEvent):void
 			{
 				if(event.columnIndex == 6)
 				{
 					setColumnSort(dgHost, event.columnIndex);
 				}
-				
+
 				model.hostItemClick(event);
 			}
-			
+
 			protected function image1_clickHandler(event:MouseEvent):void
 			{
 				model.abortUpdate();
 			}
-			
+
 		]]>
 	</fx:Script>
 	<s:states>
@@ -80,7 +78,7 @@
 	<!-- Background Label -->
 
 	<!-- Task Pop up  -->
-	<view:TaskSetting includeIn="FIRST" dataProvider="{model.appModel.settingsVo.tasks}" verticalCenter="0" horizontalCenter="0" />
+	<view:TaskSetting includeIn="FIRST" verticalCenter="0" horizontalCenter="0" />
 	<!-- Task Pop up  -->
 
 	<!--main view-->
@@ -91,112 +89,115 @@
 		<s:layout>
 			<s:VerticalLayout paddingBottom="6" paddingLeft="6" paddingRight="6" paddingTop="6" />
 		</s:layout>
-
+		<s:HGroup width="100%">
+			<mx:Spacer width="100%"/>
+			<mx:LinkButton textAlign="right" icon="{Icons.SERVER_GO}" label="Task List" click="model.goFirst()"/>
+			<mx:LinkButton textAlign="right" icon="{Icons.WRENCH}" label="Settings" click="model.editSettings()"/>
+			<!--<mx:LinkButton textAlign="right" icon="{Icons.HELP}" label="Help" enabled="false"/>-->
+			<mx:LinkButton id="btnUpdate" textAlign="right" icon="{Icons.INFORMATION}" label="Update" click="model.update()"
+						   includeInLayout="{model.appModel.updater.hasUpdate}" visible="{model.appModel.updater.hasUpdate}"/>
+			<mx:LinkButton textAlign="right" icon="{Icons.CANCEL}" label="Close" click="model.exit()"/>
+		</s:HGroup>
 		<mx:HDividedBox id="leftSidePanel" width="100%" height="100%">
-			<mx:TabNavigator width="50%" height="100%" paddingBottom="5" paddingLeft="5"
+			<!--<mx:TabNavigator width="50%" height="100%" paddingBottom="5" paddingLeft="5"
 							 paddingRight="5" paddingTop="5">
 				<s:NavigatorContent label="Host user check">
 					<s:layout>
 						<s:VerticalLayout />
-					</s:layout>
-					<s:HGroup verticalAlign="middle" width="100%">
-						<mx:Button id="btnHostListOpen" click="model.browseHostList()"
-								   icon="{Icons.DISK}" mouseChildren="false" buttonMode="true"
-								   label="Browse Host file" enabled.PROCESS="false"/>
-						<mx:TextInput id="txiHostFile" width="100%" editable="false"
-									  text="{model.appModel.selectedTaskVo.importHostListFile}"
-									  toolTip="{txiHostFile.text}"
-									  enabled.PROCESS="false"/>
-					</s:HGroup>
-					<mx:HRule width="100%" strokeColor="#000000" />
-					<s:HGroup verticalAlign="middle" width="100%">
-						<mx:Button id="btnLoadHost" label="Load" click="model.loadHostList()"
-								   enabled="{!!txiHostFile.text}"
-								   icon="{Icons.ARROW_REFRESH}" mouseChildren="false" buttonMode="true"
-								   enabled.PROCESS="false"/>
-						<mx:Button id="btnHostListDelete" label="Clear"
-								   click="model.clearHostList()"
-								   enabled="{!!model.appModel.hasHostList}" icon="{Icons.DELETE}"
-								   mouseChildren="false" buttonMode="true"
-								   enabled.PROCESS="false"/>
-						<mx:Spacer width="100%"/>
-						<mx:Button id="btnStartLoop" label="Start" click="model.start()"
-								   enabled="{!(!model.appModel.hostList || !model.appModel.hostList.length)}" icon="{Icons.SERVER_GO}"
-								   mouseChildren="false" buttonMode="true"
-								   enabled.PROCESS="false"/>
-						<mx:Button id="btnStopLoop" label="Stop" click="model.stop()"
-								   enabled="false" enabled.PROCESS="true"
-								   icon="{Icons.STOP}"  mouseChildren="false" buttonMode="true"/>
-					</s:HGroup>
-					<s:HGroup verticalAlign="middle" width="100%">
-						<s:RadioButton value="All" groupName="hostFilter" label="All({model.appModel.hostCount})" selected="true" />
-						<s:RadioButton value="Success" groupName="hostFilter" label="Success({model.appModel.successHostCount})" />
-						<s:RadioButton value="Fail" groupName="hostFilter" label="Fail({model.appModel.failHostCount})" />
-						<mx:Spacer width="100%"/>
-						<!--<mx:Button click="model.onGetUser" label="Get Users"/>-->
-					</s:HGroup>
-					<mx:DataGrid id="dgHost" dataProvider="{model.appModel.hostList}" width="100%"
-								 itemClick="onHostClick(event)" height="100%" change="setColumnSort(dgUser, 0)">
-						<mx:columns>
-							<mx:DataGridColumn headerText="Open" width="40" textAlign="right">
-								<mx:itemRenderer>
-									<fx:Component>
-										<mx:HBox verticalAlign="middle" horizontalAlign="center">
-											<fx:Script>
-												<![CDATA[
-													import com.asokorea.model.enum.Icons;
-													import com.asokorea.model.vo.HostVo;
-													
-													protected function onOpen(event:MouseEvent):void
+					</s:layout>-->
+			<s:VGroup width="50%" height="100%">
+				<s:HGroup verticalAlign="middle" width="100%" enabled.PROCESS="false">
+					<mx:Button id="btnHostListOpen" click="model.browseHostList()"
+							   icon="{Icons.PAGE_EXCEL}" mouseChildren="false" buttonMode="true"
+							   label="Browse Host file" />
+					<mx:TextInput id="txiHostFile" width="100%" editable="false"
+								  text="{model.appModel.selectedTaskVo.importHostListFile}"
+								  toolTip="{txiHostFile.text}"/>
+					<mx:Button click="model.openFile(txiHostFile.text)" mouseChildren="false" buttonMode="true"
+							   icon="{Icons.FOLDER_EXPLORE}" label="Open" enabled="{!!txiHostFile.text}" />
+				</s:HGroup>
+				<mx:HRule width="100%" strokeColor="#000000" />
+				<s:HGroup verticalAlign="middle" width="100%">
+					<mx:Button id="btnLoadHost" label="Load" click="model.loadHostList()"
+							   enabled="{!!txiHostFile.text}"
+							   icon="{Icons.ARROW_REFRESH}" mouseChildren="false" buttonMode="true"
+							   enabled.PROCESS="false"/>
+					<mx:Button id="btnHostListDelete" label="Clear"
+							   click="model.clearHostList()"
+							   enabled="{!!model.appModel.hasHostList}" icon="{Icons.DELETE}"
+							   mouseChildren="false" buttonMode="true"
+							   enabled.PROCESS="false"/>
+					<mx:Spacer width="100%"/>
+					<mx:Button id="btnStartLoop" label="Start" click="model.start()"
+							   enabled="{!!model.appModel.hasHostList}" icon="{Icons.SERVER_GO}"
+							   mouseChildren="false" buttonMode="true"
+							   enabled.PROCESS="false"/>
+					<mx:Button id="btnStopLoop" label="Stop" click="model.stop()"
+							   enabled="false" enabled.PROCESS="true"
+							   icon="{Icons.STOP}"  mouseChildren="false" buttonMode="true"/>
+				</s:HGroup>
+				<s:HGroup verticalAlign="middle" width="100%">
+					<s:RadioButton value="All" groupName="hostFilter" label="All({model.appModel.hostCount})" selected="true" />
+					<s:RadioButton value="Success" groupName="hostFilter" label="Success({model.appModel.successHostCount})" />
+					<s:RadioButton value="Fail" groupName="hostFilter" label="Fail({model.appModel.failHostCount})" />
+					<mx:Spacer width="100%"/>
+					<!--<mx:Button click="model.onGetUser" label="Get Users"/>-->
+				</s:HGroup>
+				<mx:DataGrid id="dgHost" dataProvider="{model.appModel.selectedTaskVo.hostList}" width="100%"
+							 itemClick="onHostClick(event)" height="100%" change="setColumnSort(dgUser, 0)">
+					<mx:columns>
+						<mx:DataGridColumn headerText="Open" width="40" textAlign="right">
+							<mx:itemRenderer>
+								<fx:Component>
+									<mx:HBox verticalAlign="middle" horizontalAlign="center">
+										<fx:Script>
+											<![CDATA[
+												import com.asokorea.model.enum.Icons;
+												import com.asokorea.model.vo.HostVo;
+
+												protected function onOpen(event:MouseEvent):void
+												{
+													if(data is HostVo)
 													{
-														if(data is HostVo)
+														var hostVo:HostVo = data as HostVo; 
+														if(hostVo.logFile && hostVo.logFile.exists)
 														{
-															var hostVo:HostVo = data as HostVo; 
-															if(hostVo.logFile && hostVo.logFile.exists)
-															{
-																hostVo.logFile.openWithDefaultApplication();
-															}
+															hostVo.logFile.openWithDefaultApplication();
 														}
 													}
-													
-												]]>
-											</fx:Script>
-											<mx:LinkButton icon="{Icons.DISK}" click="onOpen(event)" visible="{!(!(data is HostVo) || !HostVo(data).logFile.exists)}" />
-										</mx:HBox>
-										</fx:Component>
-								</mx:itemRenderer>
-							</mx:DataGridColumn>
-							<mx:DataGridColumn dataField="ip" headerText="ip" width="110" />
-							<mx:DataGridColumn dataField="hostName" headerText="hostName" width="170" />
-							<mx:DataGridColumn dataField="isConnected" headerText="Connect" width="60"
-											   itemRenderer="com.asokorea.view.renderers.SelectedItemRenderer"/>
-							<mx:DataGridColumn dataField="isComplete" headerText="Complete" width="60"
-											   itemRenderer="com.asokorea.view.renderers.SelectedItemRenderer"/>
-							<mx:DataGridColumn labelFunction="userCountFunc" headerText="user count" width="80" />
-							<mx:DataGridColumn dataField="isDefault" headerText="Standard" itemRenderer="com.asokorea.view.renderers.StandardItemRenderer"/>
-						</mx:columns>
-					</mx:DataGrid>
-					<mx:HRule width="100%" strokeColor="#000000" />
-					<s:HGroup verticalAlign="middle" width="100%">
-						<mx:Button id="btnLogOpen" click="model.browseLogDir()" icon="{Icons.MAGNIFIER}" label="Browse Log Dir"
-								   mouseChildren="false" buttonMode="true" enabled.PROCESS="false"/>
-						<mx:TextInput id="txiLogDir" width="100%" editable="false" text="{model.appModel.selectedTaskVo.logPath}"
-									  toolTip="{txiLogDir.text}" enabled.PROCESS="false"/>
-						<mx:Button click="model.openLogDir(txiLogDir.text)"  mouseChildren="false" buttonMode="true"
-								   icon="{Icons.FOLDER_EXPLORE}" enabled.PROCESS="false" />
-					</s:HGroup>
-				</s:NavigatorContent>
-			</mx:TabNavigator>	
+												}
+
+											]]>
+										</fx:Script>
+										<mx:LinkButton icon="{Icons.DISK}" click="onOpen(event)" visible="{!(!(data is HostVo) || !HostVo(data).logFile.exists)}" />
+									</mx:HBox>
+								</fx:Component>
+							</mx:itemRenderer>
+						</mx:DataGridColumn>
+						<mx:DataGridColumn dataField="ip" headerText="ip" width="110" />
+						<mx:DataGridColumn dataField="hostName" headerText="hostName" width="170" />
+						<mx:DataGridColumn dataField="isConnected" headerText="Connect" width="60"
+										   itemRenderer="com.asokorea.view.renderers.SelectedItemRenderer"/>
+						<mx:DataGridColumn dataField="isComplete" headerText="Complete" width="60"
+										   itemRenderer="com.asokorea.view.renderers.SelectedItemRenderer"/>
+						<mx:DataGridColumn labelFunction="userCountFunc" headerText="user count" width="80" />
+						<mx:DataGridColumn dataField="isDefault" headerText="Standard" itemRenderer="com.asokorea.view.renderers.StandardItemRenderer"/>
+					</mx:columns>
+				</mx:DataGrid>
+				<mx:HRule width="100%" strokeColor="#000000" />
+				<s:HGroup verticalAlign="middle" width="100%">
+					<mx:Button id="btnLogOpen" click="model.browseLogDir()" icon="{Icons.MAGNIFIER}" label="Browse Log Dir"
+							   mouseChildren="false" buttonMode="true" enabled.PROCESS="false"/>
+					<mx:TextInput id="txiLogDir" width="100%" editable="false" text="{model.appModel.selectedTaskVo.logPath}"
+								  toolTip="{txiLogDir.text}" enabled.PROCESS="false"/>
+					<mx:Button click="model.openFile(txiLogDir.text)"  mouseChildren="false" buttonMode="true"
+							   icon="{Icons.FOLDER_EXPLORE}" enabled.PROCESS="false" label="Open" />
+				</s:HGroup>
+			</s:VGroup>
+			<!--</s:NavigatorContent>
+		</mx:TabNavigator>-->	
 			<mx:VDividedBox id="rightSidePanel" width="50%" height="100%">
 				<s:VGroup width="100%" height="75%">
-					<s:HGroup width="100%">
-						<mx:Spacer width="100%"/>
-						<mx:LinkButton textAlign="right" icon="{Icons.SERVER_GO}" label="Task List" click="model.goFirst()"/>
-						<mx:LinkButton textAlign="right" icon="{Icons.WRENCH}" label="Settings" click="model.editSettings()"/>
-						<!--<mx:LinkButton textAlign="right" icon="{Icons.HELP}" label="Help" enabled="false"/>-->
-						<mx:LinkButton id="btnUpdate" textAlign="right" icon="{Icons.INFORMATION}" label="Update" click="model.update()"
-									   includeInLayout="{model.appModel.updater.hasUpdate}" visible="{model.appModel.updater.hasUpdate}"/>
-					</s:HGroup>
 					<mx:DataGrid id="dgUser" width="100%" height="100%"
 								 dataProvider="{HostVo(dgHost.selectedItem).userList}">
 						<mx:columns>
@@ -207,8 +208,9 @@
 						</mx:columns>
 					</mx:DataGrid>
 				</s:VGroup>
-				<panels:TerminalPanel id="terminalPanel" width="100%" height="25%" terminal="{model.appModel.terminalOutput}"/>
-				<panels:TerminalPanel id="errorPanel" width="100%" height="25%" terminal="{model.appModel.standardError}"/>
+				<panels:TerminalPanel id="terminalPanel" width="100%" height="25%" terminal="{model.appModel.standardOutput}"/>
+				<panels:TerminalPanel id="errorPanel" width="100%" height="25%" terminal="{model.appModel.standardError}"
+									  includeInLayout="false" visible="false"/>
 			</mx:VDividedBox>
 		</mx:HDividedBox>
 	</s:BorderContainer>

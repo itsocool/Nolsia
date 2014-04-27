@@ -55,7 +55,7 @@ package com.asokorea.util
 				var processArgs:Vector.<String>=new Vector.<String>();
 				
 				processArgs.push(ExternalCommandType.SSH);
-				processArgs.push(taskVo.nativePath.replace(/ /g,"[_]"));
+				processArgs.push(taskVo.configXmlPath.replace(/ /g,"[_]"));
 				processArgs.push(taskVo.taskName);
 				
 				nativeProcessStartupInfo.executable = cmdFile;

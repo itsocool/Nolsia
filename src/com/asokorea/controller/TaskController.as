@@ -19,7 +19,7 @@ package com.asokorea.controller
 
 	public class TaskController
 	{
-		protected static var taskBaseDir:File = File.userDirectory.resolvePath("task");
+//		protected static var taskBaseDir:File = File.userDirectory.resolvePath("task");
 		
 		[Inject]
 		public var appModel:AppModel;
@@ -33,8 +33,11 @@ package com.asokorea.controller
 		[PostConstruct]
 		public function init():void
 		{
-			appModel.settingsVo = new SettingsVo();
-			appModel.settingsVo.save();
+			if(!appModel.settingsVo)
+			{
+				appModel.settingsVo = new SettingsVo();
+				appModel.settingsVo.save();
+			}
 		}
 		
 		[EventHandler(event="editSettings")]
@@ -44,13 +47,6 @@ package com.asokorea.controller
 			taskModel.settingsForm = PopUpManager.createPopUp(app, SettingsForm, true) as SettingsForm;
 			taskModel.settingsForm.settingsVo = appModel.settingsVo;
 			PopUpManager.centerPopUp(taskModel.settingsForm);
-			taskModel.settingsForm.addEventListener(CloseEvent.CLOSE, onCloseSettings);
-		}
-		
-		protected function onCloseSettings(event:CloseEvent):void
-		{
-			taskModel.settingsForm.removeEventListener(CloseEvent.CLOSE, onCloseSettings);
-			PopUpManager.removePopUp(taskModel.settingsForm);
 		}
 		
 		[EventHandler(event="TaskEvent.ADD")]
@@ -58,13 +54,14 @@ package com.asokorea.controller
 		{
 			var app:DisplayObject = FlexGlobals.topLevelApplication as DisplayObject;
 			taskModel.taskForm = PopUpManager.createPopUp(app, TaskForm) as TaskForm;
+			taskModel.taskForm.taskVo = new TaskVo();
+			taskModel.taskForm.currentState = NavigationModel.TASK_ADD;
 			PopUpManager.centerPopUp(taskModel.taskForm);
 		}
 		
 		[EventHandler(event="TaskEvent.OPEN")]
 		public function openTask(event:TaskEvent):void
 		{
-			LOG.debug("Open Task", event.taskVo.taskName);
 			var task:TaskVo = event.taskVo;
 			
 			if(task && task.importHostListFile)
@@ -80,7 +77,11 @@ package com.asokorea.controller
 		[EventHandler(event="TaskEvent.EDIT")]
 		public function editTask(event:TaskEvent):void
 		{
-			LOG.debug("Edit Task", event.taskVo.taskName);
+			var app:DisplayObject = FlexGlobals.topLevelApplication as DisplayObject;
+			taskModel.taskForm = PopUpManager.createPopUp(app, TaskForm) as TaskForm;
+			taskModel.taskForm.taskVo = appModel.selectedTaskVo;
+			taskModel.taskForm.currentState = NavigationModel.TASK_EDIT;
+			PopUpManager.centerPopUp(taskModel.taskForm);
 		}
 		
 		[EventHandler(event="TaskEvent.DELETE")]

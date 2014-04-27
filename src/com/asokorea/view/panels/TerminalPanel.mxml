@@ -7,6 +7,8 @@
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[
+			import mx.controls.Alert;
+			
 			import spark.events.TextOperationEvent;
 
 			private var _terminal:String = "";
@@ -41,12 +43,20 @@
 				terminalArea.text = "";
 			}
 			
+			protected function onCopy(event:MouseEvent):void
+			{
+				Clipboard.generalClipboard.clear();
+				Clipboard.generalClipboard.setData(ClipboardFormats.TEXT_FORMAT, terminalArea.text);
+				Alert.show("Copy to Clipboard");
+			}
+			
 		]]>
 	</fx:Script>
 	<s:HGroup width="100%" verticalAlign="middle">
 		<s:Label text="Terminal" fontWeight="bold"/>
 		<mx:Spacer width="100%" />
 		<mx:CheckBox id="chkAutoScroll" label="Auto Scroll" selected="true" />
+		<mx:LinkButton id="btnCopyAll" label="Copy All" click="onCopy(event)"/>
 		<mx:LinkButton id="btnClearTerminal" label="Clear" click="onClear(event)"/>
 	</s:HGroup>
 

@@ -10,6 +10,19 @@
 			
 			import mx.controls.dataGridClasses.DataGridListData;
 
+			private var _icon:Class = Icons.TICK;
+
+			public function get icon():Class
+			{
+				return _icon;
+			}
+
+			[Bindable]
+			public function set icon(value:Class):void
+			{
+				_icon = value;
+			}
+
 			override public function set data(value:Object):void
 			{
 				super.data = value;
@@ -35,5 +48,5 @@
 	<s:layout>
 		<s:HorizontalLayout horizontalAlign="center" verticalAlign="middle" />
 	</s:layout>
-		<mx:Image source="{Icons.ACCEPT}" includeIn="SELECTED" />
+		<mx:Image source="{icon}" includeIn="SELECTED" />
 </s:MXDataGridItemRenderer>

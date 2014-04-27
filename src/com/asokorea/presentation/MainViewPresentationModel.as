@@ -2,26 +2,23 @@ package com.asokorea.presentation
 {
 
 	import com.asokorea.event.FileEventEX;
-	import com.asokorea.event.FileReaderEvent;
 	import com.asokorea.event.HostEvent;
 	import com.asokorea.event.TaskEvent;
 	import com.asokorea.model.AppModel;
 	import com.asokorea.model.NavigationModel;
 	import com.asokorea.model.vo.HostVo;
 	import com.asokorea.model.vo.TaskVo;
-	import com.asokorea.supportclass.FileExtensionFilter;
-	import com.asokorea.supportclass.IFilter;
-	import com.asokorea.util.Global;
 	
-	import flash.display.DisplayObject;
+	import flash.desktop.NativeApplication;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.filesystem.File;
-	import flash.net.FileFilter;
 	
+	import mx.controls.Alert;
 	import mx.controls.DataGrid;
 	import mx.controls.dataGridClasses.DataGridColumn;
+	import mx.events.CloseEvent;
 	import mx.events.ListEvent;
 	
 	public class MainViewPresentationModel extends EventDispatcher
@@ -47,24 +44,24 @@ package com.asokorea.presentation
 			dispatcher.dispatchEvent(new Event("editSettings"));
 		}
 		
-		public function addNewTask(parentView:DisplayObject):void
+		public function taskAdd():void
 		{
-			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.ADD, null, parentView));
+			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.ADD, null));
 		}
 		
-		public function taskOpen(task:TaskVo):void
+		public function taskOpen(taskVo:TaskVo):void
 		{
-			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.OPEN, task));
+			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.OPEN, taskVo));
 		}
 		
-		public function taskEdit(task:TaskVo):void
+		public function taskEdit(taskVo:TaskVo):void
 		{
-			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.EDIT, task));
+			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.EDIT, taskVo));
 		}
 		
-		public function taskDelete(task:TaskVo):void
+		public function taskDelete(taskVo:TaskVo):void
 		{
-			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.DELETE, task));
+			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.DELETE, taskVo));
 		}
 		
 		public function browseHostList():void
@@ -88,7 +85,7 @@ package com.asokorea.presentation
 		
 		public function clearHostList():void
 		{
-			appModel.hostList = null;
+			appModel.selectedTaskVo.hostList = null;
 			appModel.hasHostList = false;
 		}
 		
@@ -114,10 +111,10 @@ package com.asokorea.presentation
 			}
 		}
 		
-		public function openLogDir(logPath:String):void
+		public function openFile(path:String):void
 		{
-			var logDir:File = new File(logPath);
-			logDir.openWithDefaultApplication();
+			var file:File = new File(path);
+			file.openWithDefaultApplication();
 		}
 
 		public static const CURRENT_STATE_CHANGED:String="currentStateChanged";
@@ -138,7 +135,6 @@ package com.asokorea.presentation
 				_currentState=value;
 				this.dispatchEvent(new Event(CURRENT_STATE_CHANGED));
 			}
-			trace(Global.classInfo);
 		}
 		
 		public function update():void
@@ -154,6 +150,18 @@ package com.asokorea.presentation
 		{
 			appModel.updater.abort();
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
+		}
+		
+		public function exit():void
+		{
+			Alert.show("Are you sure?", "Alert", Alert.YES | Alert.NO, null, function(event:CloseEvent):void{
+				if(event.detail == Alert.YES)
+				{
+					appModel.settingsVo.save();
+					appModel.selectedTaskVo.save();
+					NativeApplication.nativeApplication.exit();
+				}
+			});
 		}
 	}
 }

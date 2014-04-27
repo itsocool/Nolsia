@@ -15,13 +15,11 @@ package com.asokorea.event
 		public static const STOP:String = "stop";
 		
 		private var _task:TaskVo;
-		private var _parentView:DisplayObject;
 		
-		public function TaskEvent(type:String, task:TaskVo = null, parentView:DisplayObject = null)
+		public function TaskEvent(type:String, task:TaskVo = null)
 		{
 			super(type, true, true);
 			_task = task;
-			_parentView = parentView;
 		}
 
 		override public function clone():Event
@@ -32,11 +30,6 @@ package com.asokorea.event
 		public function get taskVo():TaskVo
 		{
 			return _task;
-		}
-		
-		public function get parentView():DisplayObject
-		{
-			return _parentView;
 		}
 	}
 }

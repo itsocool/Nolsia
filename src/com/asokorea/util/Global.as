@@ -6,9 +6,58 @@ package com.asokorea.util
 	import flash.system.Capabilities;
 	
 	import mx.controls.Alert;
+	import mx.utils.StringUtil;
 
 	public final class Global
 	{
+		public static const TEMPLETE_DIR:File = File.applicationDirectory.resolvePath("templete/task");
+		public static const DEFAULT_TASK_NAME:String = "_default_";
+
+		public static function get SETTING_FILE():File
+		{
+			var result:File = File.userDirectory.resolvePath("task");
+			
+			if(!result || !result.exists || !result.isDirectory)
+			{
+				TEMPLETE_DIR.copyTo(result);
+			}
+
+			result = result.resolvePath("settings.xml");
+			
+			if(!result || !result.exists)
+			{
+				var source:File = new File(TEMPLETE_DIR.nativePath + "/settings.xml");
+				source.copyTo(result);
+				result.load();
+			}
+			
+			return result;
+		}
+
+		public static function get TASK_BASE_DIR():File
+		{
+			var result:File = File.userDirectory.resolvePath("task");
+			
+			if(!result || !result.exists || !result.isDirectory)
+			{
+				result.createDirectory();
+			}
+			
+			return result;
+		}
+
+		public static function get DEFAULT_LOG_DIR():File
+		{
+			var result:File = File.userDirectory.resolvePath("logs");
+			
+			if(!result || !result.exists || !result.isDirectory)
+			{
+				result.createDirectory();
+			}
+			
+			return result;
+		}
+		
 		public static function get classInfo():ClassInfo
 		{
 			return getClassInfo(3);
@@ -69,8 +118,17 @@ package com.asokorea.util
 		
 		public static function cdata(data:String, tag:String):XML {
 			var xml:XML = new XML("<" + tag + "/>");
-			XML.prettyIndent
-			return xml.appendChild(new XML("<![CDATA[" + data + "]]>"));
+			var result:XML = null;
+			
+			if(data && StringUtil.trim(data))
+			{
+				result = xml.appendChild(new XML("<![CDATA[" + data + "]]>"));
+			}else
+			{
+				result = XML("<" + tag + "/>");
+			}
+			
+			return result;
 		}
 		
 		public static function readFile(file:File):String

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
 	<defaultLogDir></defaultLogDir>
+	<defaultTaskName>_default_</defaultTaskName>
 	<tasks>
 		<taskRef>
 			<taskName>_default_</taskName>

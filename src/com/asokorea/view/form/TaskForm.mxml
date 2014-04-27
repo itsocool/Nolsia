@@ -2,111 +2,192 @@
 <s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
 			   xmlns:s="library://ns.adobe.com/flex/spark"
 			   xmlns:mx="library://ns.adobe.com/flex/mx"
-			   width="370" title="Task Properties">
+			   width="600" title.ADD="Add New Taks" title.EDIT="Edit Task"
+			   creationComplete.ADD="init(event)"
+			   close="close(event)">
 	<fx:Script>
 		<![CDATA[
-			import com.asokorea.model.vo.SettingsVo;
+			import com.asokorea.model.enum.Icons;
 			import com.asokorea.model.vo.TaskVo;
-			
-			private var _settings:SettingsVo;
+			import com.asokorea.presentation.MainViewPresentationModel;
+			import com.asokorea.util.Excel2Xml;
+
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.utils.StringUtil;
+
+			[Bindable]
+			[Inject]
+			public var model:MainViewPresentationModel;
+
+			[Bindable]
+			private var _commands:String;
+
+			[Bindable]
 			private var _taskVo:TaskVo;
 			
-			[Bindable]
-			public var defaultLogPath:String;
-			
+			private var _excelFile:File;
+			private var _ligDir:File;
+
 			public function get taskVo():TaskVo
 			{
 				return _taskVo;
 			}
 
-			[Bindable]
-			public function get settingsVo():SettingsVo
+			public function set taskVo(value:TaskVo):void
 			{
-				return _settings;
+				_taskVo = value;
+
+				if(value && value.sshVo && value.sshVo.commands as ArrayCollection)
+				{
+					_commands = value.sshVo.commands.source.join("\n");
+				}
 			}
 			
-			public function set settingsVo(value:SettingsVo):void
+			protected function init(event:FlexEvent):void
 			{
-				_settings = value;
-				defaultLogPath = value.defaultLogDir.nativePath;
-			}
-			
+				validateNow();
+				focusManager.setFocus(txiTaskName);
+			}			
+
 			protected function browseDir(event:MouseEvent):void
 			{
-				settingsVo.defaultLogDir ||= SettingsVo.DEFAULT_LOG_DIR;
-				settingsVo.defaultLogDir.browseForDirectory("Select Log Dir");
-				settingsVo.defaultLogDir.addEventListener(Event.SELECT, onSelectDir);
+				_ligDir = new File(taskVo.logPath);
+				_ligDir.addEventListener(Event.SELECT, onSelectDir);
+				_ligDir.browseForDirectory("Select Log Dir");
 			}
-			
+
 			protected function onSelectDir(event:Event):void
 			{
-				settingsVo.defaultLogDir.removeEventListener(Event.SELECT, onSelectDir);
-				settingsVo.save();
+				_ligDir.removeEventListener(Event.SELECT, onSelectDir);
+				txiLogDir.text = _ligDir.nativePath;
 			}
-			
-//			protected function onSetDefaultTask(event:IndexChangeEvent):void
-//			{
-//				var taskVo:TaskVo = ddlTask.selectedItem as TaskVo;
-//				
-//				if(taskVo)
-//				{
-//					settingsVo.defaultTask = taskVo.taskName;
-//					settingsVo.save();
-//				}
-//			}
 
-			
+			protected function browseFile(event:MouseEvent):void
+			{
+				_excelFile = new File(taskVo.taskBaseDir.nativePath);
+				_excelFile.addEventListener(Event.SELECT, onSelectFile);
+				_excelFile.browseForOpen("Select Host list File", Excel2Xml.hostFileTypeFilter);
+			}
+
+			protected function onSelectFile(event:Event):void
+			{
+				_excelFile.removeEventListener(Event.SELECT, onSelectFile);
+				txiHostFile.text = _excelFile.nativePath;
+			}
+
+			protected function save(event:MouseEvent):void
+			{
+				_taskVo.description = txiDesc.text;
+				_taskVo.exportedHostListFile = txiHostFile.text;
+				_taskVo.logPath = txiLogDir.text;
+				_taskVo.sshVo.user = txiUser.text;
+				_taskVo.sshVo.password = txiPassword.text;
+				_taskVo.sshVo.maxConnection = numsMaxConnection.value;
+				_taskVo.sshVo.timeout = numsTimeout.value;
+				_taskVo.sshVo.autoExit = chkAutoExit.selected;
+
+				var commandsList:ArrayCollection = null;
+
+				if(txaCommands.text && StringUtil.trim(txaCommands.text).length > 0)
+				{
+					_commands = StringUtil.trim(txaCommands.text);
+					var arr:Array = _commands.split(/\n|\r\n/);
+					commandsList = new ArrayCollection(arr);
+				}
+
+				_taskVo.sshVo.commands = commandsList;
+				_taskVo.save();
+			}
+
+			protected function close(event:Event):void
+			{
+				PopUpManager.removePopUp(this);
+			}
+
 		]]>
 	</fx:Script>
 	<s:layout>
 		<s:VerticalLayout paddingLeft="15" paddingRight="15" paddingTop="10" paddingBottom="10"/>
 	</s:layout>
+	<s:states>
+		<s:State name="EDIT"/>
+		<s:State name="ADD"/>
+	</s:states>
 	<fx:Declarations>
-		<!--<mx:StringValidator id="valName" required="true" requiredFieldError="Name is required, this can be anything you want." source="{inName}" property="text" />
-		<mx:StringValidator id="valDomain" required="true" requiredFieldError="Host is required (IP address or Domain name)" source="{inHost}" property="text" />
-		<mx:StringValidator id="valPort" required="true" requiredFieldError="Port is required, 22 is default for SSH" source="{inPort}" property="text" />-->
 	</fx:Declarations>
-	<s:Label fontWeight="bold" styleName="InformationLabel" text="Site Information"/>
-<!--	<s:HGroup horizontalAlign="center" width="100%" height="28" styleName="formElement" verticalAlign="middle">
-		<s:Label text="Name"/>
-		<s:TextInput maxChars="40" text="{settingsVo.name}" id="inName" width="100%"/>
+	<s:BorderContainer width="100%">
+		<s:layout>
+			<s:VerticalLayout paddingBottom="4" paddingTop="4" paddingLeft="4" paddingRight="4" />
+		</s:layout>
+		<s:HGroup horizontalAlign="center" width="100%" height="28" styleName="formElement" verticalAlign="middle">
+			<s:Label width="90" text="Task Name *"/>
+			<s:TextInput id="txiTaskName" width="100%" maxChars="40" restrict="0-9A-z_-" text="{_taskVo.taskName}"/>
+		</s:HGroup>	
+	</s:BorderContainer>
+
+	<s:BorderContainer width="100%" enabled.ADD="{!!txiTaskName.text}">
+		<s:layout>
+			<s:VerticalLayout paddingBottom="4" paddingTop="4" paddingLeft="4" paddingRight="4" />
+		</s:layout>
+		<s:Label fontWeight="bold" styleName="InformationLabel" text="Task information"/>
+		<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+			<s:Label width="90" text="Description"/>
+			<s:TextInput id="txiDesc" width="100%" text="{_taskVo.description}"/>
+		</s:HGroup>
+		<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+			<s:Label width="90" text="HostListFile"/>
+			<s:TextInput id="txiHostFile" width="100%" text="{_taskVo.importHostListFile}"/>
+			<mx:Image width="16" height="16" buttonMode="true" click="browseFile(event)"
+					  source="{Icons.MAGNIFIER}"/>
+		</s:HGroup> 
+		<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+			<s:Label width="90" text="Log Directory"/>
+			<s:TextInput id="txiLogDir" width="100%" text="{_taskVo.logPath}"/>
+			<mx:Image width="16" height="16" buttonMode="true" click="browseDir(event)"
+					  source="{Icons.MAGNIFIER}"/>
+		</s:HGroup> 
+	</s:BorderContainer>
+
+	<s:BorderContainer width="100%" enabled.ADD="{!!txiTaskName.text}">
+		<s:layout>
+			<s:VerticalLayout paddingBottom="4" paddingTop="4" paddingLeft="4" paddingRight="4" />
+		</s:layout>
+		<s:Label fontWeight="bold" styleName="InformationLabel" text="SSH Connection Information"/>
+		<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+			<s:Label text="User" width="90"/>
+			<s:TextInput id="txiUser" width="100%" text="{_taskVo.sshVo.user}"/>
+			<s:Label text="Password" width="90"/>
+			<s:TextInput id="txiPassword" width="100%" displayAsPassword="true"
+						 text="{_taskVo.sshVo.password}"/>
+		</s:HGroup>
+		<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+			<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+				<s:Label text="TimeOut(ms)" width="90"/>
+				<s:NumericStepper id="numsTimeout" width="70" maximum="9999900" minimum="0"
+								  stepSize="100" value="{_taskVo.sshVo.timeout}"/>
+			</s:HGroup>
+			<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+				<s:Label text="Max Connection" width="90"/>
+				<s:NumericStepper id="numsMaxConnection" width="70" maximum="200" minimum="1"
+								  stepSize="1" value="{_taskVo.sshVo.maxConnection}"/>
+			</s:HGroup>
+			<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
+				<s:CheckBox id="chkAutoExit" label="Auto Exit" selected="{_taskVo.sshVo.autoExit}"/>
+			</s:HGroup>
+		</s:HGroup>
+
+		<s:HGroup width="100%" height="200" styleName="formElement" verticalAlign="middle">
+			<s:Label text="Command List" width="90"/>
+			<s:TextArea id="txaCommands" width="100%" height="100%" horizontalScrollPolicy="auto"
+						text="{_commands}" verticalScrollPolicy="auto"/>
+		</s:HGroup>		
+	</s:BorderContainer>
+
+	<s:HGroup width="100%" horizontalAlign="right" enabled.ADD="{!!txiTaskName.text}">
+		<mx:Button id="btnSave" includeIn="EDIT" label="Save Task" click="save(event)" icon="{Icons.DISK}"/>
+		<mx:Button id="btnAdd" includeIn="ADD" label="Add New Task" click="save(event)" icon="{Icons.ADD}"/>
 	</s:HGroup>	
-	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
-		<s:Label text="Web Root"/>
-		<s:TextInput  text="{connection.root}" restrict="a-zA-Z0-9~/\-_\\.:" id="inRoot" width="100%"/>
-	</s:HGroup>
-	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
-		<s:Label text="URI" />
-		<s:TextInput text="{connection.uri}" id="inURI" width="100%" restrict="a-zA-Z0-9~/\-_\\:."   />
-	</s:HGroup> 
-	<s:Label fontWeight="bold" styleName="InformationLabel" text="Connection Information"/>
-	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
-		<s:Label text="Host"/>
-		<s:TextInput text="{connection.host}" id="inHost" restrict="a-zA-Z0-9~/\-_\\:." width="100%"  />
-		<s:Label text="Port" />
-		<s:TextInput text="{connection.port}" restrict="0-9" id="inPort" width="40" />
-	</s:HGroup>
-	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
-		<s:Label text="Path to Drush" />
-		<s:TextInput text="{connection.drushpath}" restrict="a-zA-Z0-9~/\-_\\.:"  id="inDrushPath" width="100%"   />
-	</s:HGroup>
-	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
-		<s:Label text="Key File"/>
-		<s:Label id="identity" width="100%" text="{connection.identity}"/>
-		<mx:Image click="browse();"  width="16" height="16" source="{Icons.MAGNIFIER}" buttonMode="true" />
-	</s:HGroup>
-	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
-		<s:Label text="User"/>
-		<s:TextInput text="{connection.username}" restrict="a-zA-Z0-9~/\-_\\." id="inUser" width="100%"  />
-	</s:HGroup>
-	<s:HGroup width="100%" height="28" styleName="formElement" verticalAlign="middle">
-		<s:Label text="Password"/>
-		<s:TextInput text="{connection.password}" id="inPassword" displayAsPassword="true" width="100%"  />
-	</s:HGroup>
-	
-	<s:HGroup horizontalAlign="right" width="100%" >
-		<mx:Button icon="{Icons.DISK}" click="save();"   label="Save" id="btnSave"/>
-		<mx:Button icon="{Icons.CANCEL}" click="close();"   label="Cancel"  id="btnCancel"/>
-	</s:HGroup>-->	
 
 </s:TitleWindow>

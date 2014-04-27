@@ -31,10 +31,8 @@ package com.asokorea.controller
 	import mx.events.CloseEvent;
 	import mx.utils.StringUtil;
 	
-	public class AppController
+	public class HostListController
 	{
-		private var process:NativeProcess;
-		
 		[Inject]
 		public var appModel:AppModel;
 		
@@ -44,22 +42,9 @@ package com.asokorea.controller
 		[Dispatcher]
 		public var dispatcher:IEventDispatcher;
 		
-		private var multiSSH:MultiSSH;
-		private var hostMap:Dictionary = new Dictionary();		
-		
 		[PostConstruct]
 		public function init():void
 		{
-			var appXml:XML = NativeApplication.nativeApplication.applicationDescriptor;
-			var ns:Namespace = appXml.namespace();
-			
-			appModel.appName = appXml.ns::name.toString();
-			appModel.appVersionLabel = appXml.ns::versionLabel[0].toString();
-			appModel.updater = new NativeUpdater();
-			appModel.updater.init();
-			appModel.settingsVo = new SettingsVo();
-			appModel.settingsVo.save();
-			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_FIRST;
 		}
 		
 		[EventHandler(event="FileEventEX.HOSTLIST_FILE_BROWSE")]

@@ -9,91 +9,151 @@ package com.asokorea.model.vo
 	[Bindable]
 	public class SettingsVo
 	{
-		public var defaultTask:String = "_default_";
-		public var tasks:ArrayCollection;
-		public var defaultLogDir:File = File.userDirectory.resolvePath("logs");
-		
-		public static const SETTING_FILE:File = File.userDirectory.resolvePath("task/settings.xml");
-		public static const DEFAULT_LOG_DIR:File = File.userDirectory.resolvePath("logs");
-		
-		private var settingXml:XML = null;
+		private var _defaultTaskName:String = Global.DEFAULT_TASK_NAME;
+		private var _defaultLogDir:File = null;
+		private var _taskList:ArrayCollection = null;
+		private var _settingXml:XML = null;
 		
 		public function SettingsVo()
 		{
-			if(!DEFAULT_LOG_DIR.exists || !DEFAULT_LOG_DIR.isDirectory)
+			if(!_defaultLogDir || !_defaultLogDir.exists || !_defaultLogDir.isDirectory)
 			{
-				DEFAULT_LOG_DIR.createDirectory();
-				DEFAULT_LOG_DIR.load();
+				_defaultLogDir = Global.DEFAULT_LOG_DIR;
+			}
+
+			load();
+		}
+
+		public function getTaskVo(taskName:String):TaskVo
+		{
+			if(_taskList)
+			{
+				for each (var item:TaskVo in _taskList) 
+				{
+					if(item.taskName == taskName)
+					{
+						return item;
+					}
+				}
 			}
 			
-			if(!SETTING_FILE.exists)
-			{
-				var file:File = File.applicationDirectory.resolvePath("templete/task");
-				file.copyTo(File.userDirectory.resolvePath("task"));
-				SETTING_FILE.load();
-			}
-			
-			settingXml = Global.readXml(SETTING_FILE); 
+			return null;
+		}
+		
+		public function load():void
+		{
+			var logDir:File = null;
+			var logPath:String = null
+			var tasks:ArrayCollection = null;
+
+			_settingXml = Global.readXml(Global.SETTING_FILE); 
 			
 			if(settingXml is XML && settingXml..taskRef is XMLList)
 			{
-				var taskList:XMLList = settingXml..taskRef as XMLList;
+				var taskXmlList:XMLList = settingXml..taskRef as XMLList;
 				tasks = new ArrayCollection();
-		
-				for each (var taskRef:XML in taskList) 
+				
+				for each (var taskRef:XML in taskXmlList) 
 				{
 					var taskName:String = taskRef.taskName.toString();
-					var taskBaseDir:String = taskRef.taskBaseDir.toString();
+					var description:String = taskRef.description.toString();
+					var taskBasePath:String = taskRef.taskBaseDir.toString();
 					var taskVo:TaskVo = new TaskVo();
+					var file:File = null;
 					
 					taskVo.taskName = taskName;
-					taskVo.loadTask(taskName);
+					taskVo.description = description;
+					taskVo.save();
 					tasks.addItem(taskVo);
-					taskRef.taskBaseDir = Global.cdata(taskVo.taskBaseDir, "taskBaseDir");
 				}
 			}
+
+			logPath = settingXml.defaultLogDir.toString();
 			
-			var logDir:File = null;
-			var dir:String = settingXml.defaultLogDir;
-			
-			if(dir)
+			if(logPath)
 			{
-				logDir = new File(dir);
+				logDir = new File(logPath);
 			}else
 			{
-				logDir = File.userDirectory.resolvePath("logs");
+				logDir = _defaultLogDir;
 			}
 			
-			if(logDir.exists && logDir.isDirectory)
+			if(!logDir || !logDir.exists)
 			{
-				defaultLogDir = logDir;
-			}else
-			{
-				if(!defaultLogDir.exists)
-				{
-					defaultLogDir.createDirectory();
-				}
+				logDir.createDirectory();
 			}
 			
-			settingXml.defaultLogDir = Global.cdata(logDir.nativePath, "defaultLogDir");
-			save();
+			defaultTaskName = settingXml.defaultTaskName.toString();
+			_taskList = tasks;
+			defaultLogDir = logDir;
 		}
-		
+
 		public function save():void
 		{
-			if(!SETTING_FILE.exists)
+			Global.saveXml(settingXml, Global.SETTING_FILE);
+		}
+		
+		public function get taskList():ArrayCollection
+		{
+			return _taskList;
+		}
+		
+		public function set taskList(value:ArrayCollection):void
+		{
+			if(settingXml)
 			{
-				var settingsXmlFile:File = File.applicationDirectory.resolvePath("templete/task/settings.xml");
-				settingsXmlFile.copyTo(File.userDirectory.resolvePath("task/settings.xml"));
-				SETTING_FILE.load();
+				settingXml.tasks = <tasks/>;
 				
-				if(!DEFAULT_LOG_DIR.exists || !DEFAULT_LOG_DIR.isDirectory)
+				for each (var taskVo:TaskVo in value) 
 				{
-					DEFAULT_LOG_DIR.createDirectory();
+					var taskRef:XML = <taskRef/>;
+					taskRef.taskName = taskVo.taskName;
+					taskRef.description = Global.cdata(taskVo.description, "description");
+					taskRef.taskBaseDir = Global.cdata(taskVo.taskBaseDir.nativePath, "taskBaseDir");
+					settingXml.tasks.appendChild(taskRef);
 				}
 			}
+			_taskList = value;
+		}
+		
+		public function get defaultLogDir():File
+		{
+			return _defaultLogDir;
+		}
+		
+		public function set defaultLogDir(value:File):void
+		{
+			if(settingXml)
+			{
+				settingXml.defaultLogDir = Global.cdata(value.nativePath, "defaultLogDir");
+			}
+			_defaultLogDir = value;
+		}
+		
+		public function get defaultTaskName():String
+		{
+			return _defaultTaskName;
+		}
+		
+		public function set defaultTaskName(value:String):void
+		{
+			if(settingXml)
+			{
+				settingXml.defaultTaskName = value;
+			}
 			
-			Global.saveXml(settingXml, SETTING_FILE);
+			_defaultTaskName = value;
+		}
+		
+		public function get settingXml():XML
+		{
+			return _settingXml;
+		}
+		
+		public function set settingXml(value:XML):void
+		{
+			load();
+			_settingXml = value;
 		}
 	}
 }

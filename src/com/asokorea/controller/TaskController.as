@@ -13,13 +13,13 @@ package com.asokorea.controller
 	import flash.display.DisplayObject;
 	import flash.filesystem.File;
 	
+	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 
 	public class TaskController
 	{
-//		protected static var taskBaseDir:File = File.userDirectory.resolvePath("task");
 		
 		[Inject]
 		public var appModel:AppModel;
@@ -63,6 +63,7 @@ package com.asokorea.controller
 		public function openTask(event:TaskEvent):void
 		{
 			var task:TaskVo = event.taskVo;
+			appModel.selectedTaskVo = task;
 			
 			if(task && task.importHostListFile)
 			{
@@ -70,7 +71,6 @@ package com.asokorea.controller
 				appModel.selectedHostListFile = (task.importHostListFile && hostFile && hostFile.exists) ? hostFile : null;
 			}
 			
-			appModel.selectedTaskVo = task;
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
 		
@@ -79,7 +79,7 @@ package com.asokorea.controller
 		{
 			var app:DisplayObject = FlexGlobals.topLevelApplication as DisplayObject;
 			taskModel.taskForm = PopUpManager.createPopUp(app, TaskForm) as TaskForm;
-			taskModel.taskForm.taskVo = appModel.selectedTaskVo;
+			taskModel.taskForm.taskVo = event.taskVo;
 			taskModel.taskForm.currentState = NavigationModel.TASK_EDIT;
 			PopUpManager.centerPopUp(taskModel.taskForm);
 		}
@@ -87,8 +87,14 @@ package com.asokorea.controller
 		[EventHandler(event="TaskEvent.DELETE")]
 		public function deleteTask(event:TaskEvent):void
 		{
-			LOG.debug("Delete Task", event.taskVo.taskName);
+			Alert.show("Are you sure?", "Alert", Alert.YES | Alert.NO, null, function(e:CloseEvent):void{
+				if(e.detail == Alert.YES)
+				{
+					var idx:int = appModel.settingsVo.taskList.getItemIndex(event.taskVo);
+					appModel.settingsVo.taskList.removeItemAt(idx);
+					appModel.settingsVo.save();
+				}
+			});
 		}
-		
 	}
 }

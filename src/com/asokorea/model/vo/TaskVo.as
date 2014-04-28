@@ -23,7 +23,8 @@ package com.asokorea.model.vo
 		private var _configXmlPath:String;
 		private var _configXml:XML;
 		private var _hostListXml:XML;
-		private var _hostList:ArrayCollection;
+
+		public var hostList:ArrayCollection;
 
 		public function getHostVo(ip:String):HostVo
 		{
@@ -51,10 +52,12 @@ package com.asokorea.model.vo
 				
 				if(!_taskBaseDir || !_taskBaseDir.exists || !_taskBaseDir.isDirectory)
 				{
-					Global.TEMPLETE_DIR.resolvePath("task/" + Global.DEFAULT_TASK_NAME).copyTo(_taskBaseDir);
+					var file:File = Global.TEMPLETE_DIR.resolvePath(Global.DEFAULT_TASK_NAME);
+					file.copyTo(_taskBaseDir);
 				}
 
 				var configXmlFile:File = _taskBaseDir.resolvePath("config.xml");
+				_configXmlPath = configXmlFile.nativePath;
 				
 				if(!configXmlFile || !configXmlFile.exists)
 				{
@@ -65,7 +68,7 @@ package com.asokorea.model.vo
 				
 				if(_configXml)
 				{
-					_configXml.taskBaseDir = _taskBaseDir.nativePath;					
+					_configXml.taskBaseDir = _taskBaseDir.nativePath;
 				}
 					
 			}else{
@@ -248,10 +251,11 @@ package com.asokorea.model.vo
 		public function set hostListXml(value:XML):void
 		{
 			var hostVo:HostVo = null;
+			var list:ArrayCollection = null;
 				
 			if (value is XML)
 			{
-				_hostList = new ArrayCollection();
+				list = new ArrayCollection();
 				
 				for (var i:int=0; i < value.sheet[0].row.length(); i++)
 				{
@@ -272,10 +276,12 @@ package com.asokorea.model.vo
 						hostVo.password = row.col[2].toString() || sshVo.password;
 						hostVo.port ||= 22;
 						hostVo.taskName = taskName;
-						_hostList.addItem(hostVo);
+						list.addItem(hostVo);
 					}
 				}
 			}
+			
+			hostList = list;
 			
 			saveHostListXml(value);
 			
@@ -297,30 +303,22 @@ package com.asokorea.model.vo
 				_importHostListFile = value.importHostListFile;
 				_exportedHostListFile = value.exportedHostListFile;
 				_logPath = value.logPath;
-				
-//				if(_exportedHostListFile)
-//				{
-//					var hostXmlFile:File = new File(_exportedHostListFile);
-//					
-//					if(hostXmlFile && hostXmlFile.exists)
-//					{
-//						hostListXml = Global.readXml(hostXmlFile);
-//					}
-//				}	
+
+				var sshXml:XML = XML(value.ssh);
 				
 				_sshVo = new SshVo();
-				sshVo.load(configXml.ssh);
+				sshVo.load(sshXml);
 			}
 		}		
-		
-		public function get hostList():ArrayCollection
-		{
-			return _hostList;
-		}
-		
-		private function set hostList(value:ArrayCollection):void
-		{
-			_hostList = value;
-		}
+//		
+//		public function get hostList():ArrayCollection
+//		{
+//			return _hostList;
+//		}
+//		
+//		private function set hostList(value:ArrayCollection):void
+//		{
+//			_hostList = value;
+//		}
 	}
 }

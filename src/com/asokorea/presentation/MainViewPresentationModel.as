@@ -8,6 +8,7 @@ package com.asokorea.presentation
 	import com.asokorea.model.NavigationModel;
 	import com.asokorea.model.vo.HostVo;
 	import com.asokorea.model.vo.TaskVo;
+	import com.asokorea.util.Global;
 	
 	import flash.desktop.NativeApplication;
 	import flash.events.Event;
@@ -72,7 +73,18 @@ package com.asokorea.presentation
 
 		public function browseLogDir():void
 		{
-			var file:File = (appModel.selectedTaskVo && appModel.selectedTaskVo.logPath) ? new File(appModel.selectedTaskVo.logPath) : null;
+			var file:File = null;
+			
+			if(appModel.selectedTaskVo && appModel.selectedTaskVo.logPath)
+			{
+				file = new File(appModel.selectedTaskVo.logPath);
+				
+				if(!file || !file.exists || !file.isDirectory)
+				{
+					file = Global.DEFAULT_LOG_DIR;
+				}
+			}
+			
 			var e:FileEventEX = new FileEventEX(FileEventEX.LOG_DIRECTORY_BROWSE, file);
 			dispatcher.dispatchEvent(e);
 		}

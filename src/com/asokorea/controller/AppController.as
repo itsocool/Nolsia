@@ -8,9 +8,9 @@ package com.asokorea.controller
 	import com.asokorea.model.NavigationModel;
 	import com.asokorea.model.vo.HostVo;
 	import com.asokorea.model.vo.SettingsVo;
-	import com.asokorea.model.vo.TaskVo;
 	import com.asokorea.supportclass.NativeUpdater;
 	import com.asokorea.util.Excel2Xml;
+	import com.asokorea.util.Global;
 	import com.asokorea.util.MultiSSH;
 	
 	import flash.desktop.NativeApplication;
@@ -20,13 +20,9 @@ package com.asokorea.controller
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
-	import flash.filesystem.FileStream;
 	import flash.net.URLRequest;
 	import flash.net.navigateToURL;
-	import flash.utils.Dictionary;
-	import flash.utils.IDataInput;
 	
-	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.events.CloseEvent;
 	import mx.utils.StringUtil;
@@ -43,9 +39,6 @@ package com.asokorea.controller
 		
 		[Dispatcher]
 		public var dispatcher:IEventDispatcher;
-		
-		private var multiSSH:MultiSSH;
-		private var hostMap:Dictionary = new Dictionary();		
 		
 		[PostConstruct]
 		public function init():void
@@ -83,13 +76,14 @@ package com.asokorea.controller
 			var logDir:File = event.file;
 			if(!logDir || !logDir.exists || !logDir.isDirectory)
 			{
-				logDir = appModel.settingsVo.defaultLogDir;
-				logDir.browseForDirectory("Select Log Directory");
-				logDir.addEventListener(Event.SELECT, function(evt:Event):void{
-					appModel.selectedTaskVo.logPath = logDir.nativePath;
-					appModel.selectedTaskVo.save();
-				});
+				logDir = Global.DEFAULT_LOG_DIR;
 			}
+			
+			logDir.browseForDirectory("Select Log Directory");
+			logDir.addEventListener(Event.SELECT, function(evt:Event):void{
+				appModel.selectedTaskVo.logPath = logDir.nativePath;
+				appModel.selectedTaskVo.save();
+			});
 		}
 		
 		protected function onCancel(event:Event):void
@@ -171,8 +165,6 @@ package com.asokorea.controller
 			var xml:XML = new XML(data);
 			
 			appModel.selectedTaskVo.hostListXml = xml;
-			
-			appModel.selectedTaskVo.hostList = null;
 			appModel.hasHostList = !!appModel.selectedTaskVo.hostList;
 			
 			if(appModel.selectedTaskVo.hostList)
@@ -230,29 +222,28 @@ package com.asokorea.controller
 				hostVo.userMap = null;
 			}
 
-			multiSSH = new MultiSSH();
-			multiSSH.addEventListener(MultiSSHEvent.CONNECTED, onSSHConnected);
-			multiSSH.addEventListener(MultiSSHEvent.COMPELETE, onSSHCompelete);
-			multiSSH.addEventListener(MultiSSHEvent.MESSAGE, onSSHMessage);
-			multiSSH.addEventListener(MultiSSHEvent.LOGIN_FAIL, onSSHError);
-			multiSSH.addEventListener(MultiSSHEvent.TIMEOUT, onSSHError);
-			multiSSH.addEventListener(MultiSSHEvent.SSH_ERROR, onSSHError);
-			multiSSH.addEventListener(MultiSSHEvent.EXCEPTION, onSSHError);
-			multiSSH.addEventListener(NativeProcessExitEvent.EXIT, onExit);
-			multiSSH.addEventListener("notFoundJava", noJavaHandler);
-			multiSSH.execute(event.taskVo);
+			appModel.multiSSH = new MultiSSH();
+			appModel.multiSSH.addEventListener(MultiSSHEvent.CONNECTED, onSSHConnected);
+			appModel.multiSSH.addEventListener(MultiSSHEvent.COMPELETE, onSSHCompelete);
+			appModel.multiSSH.addEventListener(MultiSSHEvent.MESSAGE, onSSHMessage);
+			appModel.multiSSH.addEventListener(MultiSSHEvent.LOGIN_FAIL, onSSHError);
+			appModel.multiSSH.addEventListener(MultiSSHEvent.TIMEOUT, onSSHError);
+			appModel.multiSSH.addEventListener(MultiSSHEvent.SSH_ERROR, onSSHError);
+			appModel.multiSSH.addEventListener(MultiSSHEvent.EXCEPTION, onSSHError);
+			appModel.multiSSH.addEventListener(NativeProcessExitEvent.EXIT, onExit);
+			appModel.multiSSH.addEventListener("notFoundJava", noJavaHandler);
+			appModel.multiSSH.execute(event.taskVo);
 		}
 		
 		protected function onSSHConnected(event:MultiSSHEvent):void
 		{
 			trace("onSSHConnected");
 			var eventHostVo:HostVo = event.hostVo;
-			var hostVo:HostVo = null;
+			var hostVo:HostVo = appModel.selectedTaskVo.getHostVo(eventHostVo.ip);
 			var result:String = "";
 			
-			if(eventHostVo && eventHostVo.ip && hostMap[eventHostVo.ip] is HostVo)
+			if(eventHostVo && eventHostVo.ip && hostVo is HostVo)
 			{
-				hostVo = hostMap[eventHostVo.ip] as HostVo;
 				hostVo.isConnected = true;
 				
 				if(event.data)
@@ -268,12 +259,11 @@ package com.asokorea.controller
 		{
 			trace("onSSHCompelete");
 			var eventHostVo:HostVo = event.hostVo;
-			var hostVo:HostVo = null;
+			var hostVo:HostVo = appModel.selectedTaskVo.getHostVo(eventHostVo.ip);
 			var result:String = "";
 			
-			if(eventHostVo && eventHostVo.ip && hostMap[eventHostVo.ip] is HostVo && eventHostVo.logFile is File && eventHostVo.logFile.exists)
+			if(eventHostVo && eventHostVo.ip && hostVo is HostVo && eventHostVo.logFile is File && eventHostVo.logFile.exists)
 			{
-				hostVo = hostMap[eventHostVo.ip] as HostVo;
 				hostVo.isComplete = true;
 				hostVo.hostName = eventHostVo.hostName;
 				hostVo.logFile = eventHostVo.logFile;

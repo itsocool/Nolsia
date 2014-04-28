@@ -48,10 +48,10 @@
 
 			protected function onHostClick(event:ListEvent):void
 			{
-				if(event.columnIndex == 6)
-				{
-					setColumnSort(dgHost, event.columnIndex);
-				}
+//				if(event.columnIndex == 6)
+//				{
+//					setColumnSort(dgHost, event.columnIndex);
+//				}
 
 				model.hostItemClick(event);
 			}
@@ -99,12 +99,6 @@
 			<mx:LinkButton textAlign="right" icon="{Icons.CANCEL}" label="Close" click="model.exit()"/>
 		</s:HGroup>
 		<mx:HDividedBox id="leftSidePanel" width="100%" height="100%">
-			<!--<mx:TabNavigator width="50%" height="100%" paddingBottom="5" paddingLeft="5"
-							 paddingRight="5" paddingTop="5">
-				<s:NavigatorContent label="Host user check">
-					<s:layout>
-						<s:VerticalLayout />
-					</s:layout>-->
 			<s:VGroup width="50%" height="100%">
 				<s:HGroup verticalAlign="middle" width="100%" enabled.PROCESS="false">
 					<mx:Button id="btnHostListOpen" click="model.browseHostList()"
@@ -146,42 +140,13 @@
 				<mx:DataGrid id="dgHost" dataProvider="{model.appModel.selectedTaskVo.hostList}" width="100%"
 							 itemClick="onHostClick(event)" height="100%" change="setColumnSort(dgUser, 0)">
 					<mx:columns>
-						<mx:DataGridColumn headerText="Open" width="40" textAlign="right">
-							<mx:itemRenderer>
-								<fx:Component>
-									<mx:HBox verticalAlign="middle" horizontalAlign="center">
-										<fx:Script>
-											<![CDATA[
-												import com.asokorea.model.enum.Icons;
-												import com.asokorea.model.vo.HostVo;
-
-												protected function onOpen(event:MouseEvent):void
-												{
-													if(data is HostVo)
-													{
-														var hostVo:HostVo = data as HostVo; 
-														if(hostVo.logFile && hostVo.logFile.exists)
-														{
-															hostVo.logFile.openWithDefaultApplication();
-														}
-													}
-												}
-
-											]]>
-										</fx:Script>
-										<mx:LinkButton icon="{Icons.DISK}" click="onOpen(event)" visible="{!(!(data is HostVo) || !HostVo(data).logFile.exists)}" />
-									</mx:HBox>
-								</fx:Component>
-							</mx:itemRenderer>
-						</mx:DataGridColumn>
 						<mx:DataGridColumn dataField="ip" headerText="ip" width="110" />
 						<mx:DataGridColumn dataField="hostName" headerText="hostName" width="170" />
 						<mx:DataGridColumn dataField="isConnected" headerText="Connect" width="60"
 										   itemRenderer="com.asokorea.view.renderers.SelectedItemRenderer"/>
-						<mx:DataGridColumn dataField="isComplete" headerText="Complete" width="60"
-										   itemRenderer="com.asokorea.view.renderers.SelectedItemRenderer"/>
-						<mx:DataGridColumn labelFunction="userCountFunc" headerText="user count" width="80" />
-						<mx:DataGridColumn dataField="isDefault" headerText="Standard" itemRenderer="com.asokorea.view.renderers.StandardItemRenderer"/>
+						<mx:DataGridColumn headerText="Open" width="40" textAlign="right" itemRenderer="com.asokorea.view.renderers.CompleteItemRenderer" />
+						<mx:DataGridColumn labelFunction="userCountFunc" headerText="user count" width="80" textAlign="right" />
+						<mx:DataGridColumn dataField="isDefault" headerText="Standard" textAlign="center" itemRenderer="com.asokorea.view.renderers.StandardItemRenderer"/>
 					</mx:columns>
 				</mx:DataGrid>
 				<mx:HRule width="100%" strokeColor="#000000" />
@@ -194,24 +159,30 @@
 							   icon="{Icons.FOLDER_EXPLORE}" enabled.PROCESS="false" label="Open" />
 				</s:HGroup>
 			</s:VGroup>
-			<!--</s:NavigatorContent>
-		</mx:TabNavigator>-->	
-			<mx:VDividedBox id="rightSidePanel" width="50%" height="100%">
-				<s:VGroup width="100%" height="75%">
-					<mx:DataGrid id="dgUser" width="100%" height="100%"
-								 dataProvider="{HostVo(dgHost.selectedItem).userList}">
-						<mx:columns>
-							<mx:DataGridColumn dataField="userName" headerText="UserName" width="100"/>
-							<mx:DataGridColumn dataField="privilege" headerText="Privilege" width="100" />
-							<mx:DataGridColumn dataField="secret" headerText="Secret" width="100"/>
-							<mx:DataGridColumn dataField="hash" headerText="Hash" />
-						</mx:columns>
-					</mx:DataGrid>
-				</s:VGroup>
-				<panels:TerminalPanel id="terminalPanel" width="100%" height="25%" terminal="{model.appModel.standardOutput}"/>
-				<panels:TerminalPanel id="errorPanel" width="100%" height="25%" terminal="{model.appModel.standardError}"
-									  includeInLayout="false" visible="false"/>
-			</mx:VDividedBox>
+			<mx:TabNavigator width="50%" height="100%" paddingBottom="5" paddingLeft="5"
+							 paddingRight="5" paddingTop="5">
+				<s:NavigatorContent label="Host user check">
+					<s:layout>
+						<s:VerticalLayout />
+					</s:layout>
+					<mx:VDividedBox id="rightSidePanel" width="100%" height="100%">
+						<s:VGroup width="100%" height="75%">
+							<mx:DataGrid id="dgUser" width="100%" height="100%"
+										 dataProvider="{HostVo(dgHost.selectedItem).userList}">
+								<mx:columns>
+									<mx:DataGridColumn dataField="userName" headerText="UserName" width="100"/>
+									<mx:DataGridColumn dataField="privilege" headerText="Privilege" width="100" />
+									<mx:DataGridColumn dataField="secret" headerText="Secret" width="100"/>
+									<mx:DataGridColumn dataField="hash" headerText="Hash" />
+								</mx:columns>
+							</mx:DataGrid>
+						</s:VGroup>
+						<panels:TerminalPanel id="terminalPanel" width="100%" height="25%" terminal="{model.appModel.standardOutput}"/>
+						<panels:TerminalPanel id="errorPanel" width="100%" height="25%" terminal="{model.appModel.standardError}"
+											  includeInLayout="false" visible="false"/>
+					</mx:VDividedBox>
+				</s:NavigatorContent>
+			</mx:TabNavigator>	
 		</mx:HDividedBox>
 	</s:BorderContainer>
 

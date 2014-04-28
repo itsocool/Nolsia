@@ -60,9 +60,8 @@ package com.asokorea.model.vo
 					var taskBasePath:String = taskRef.taskBaseDir.toString();
 					var taskVo:TaskVo = new TaskVo();
 					var file:File = null;
-					
-					taskVo.taskName = taskName;
-					taskVo.description = description;
+
+					taskVo.load(taskName);
 					taskVo.save();
 					tasks.addItem(taskVo);
 				}
@@ -90,6 +89,7 @@ package com.asokorea.model.vo
 
 		public function save():void
 		{
+			reLoadTaskList();
 			Global.saveXml(settingXml, Global.SETTING_FILE);
 		}
 		
@@ -100,11 +100,17 @@ package com.asokorea.model.vo
 		
 		public function set taskList(value:ArrayCollection):void
 		{
+			reLoadTaskList();
+			_taskList = value;
+		}
+		
+		private function reLoadTaskList():void
+		{
 			if(settingXml)
 			{
 				settingXml.tasks = <tasks/>;
 				
-				for each (var taskVo:TaskVo in value) 
+				for each (var taskVo:TaskVo in taskList) 
 				{
 					var taskRef:XML = <taskRef/>;
 					taskRef.taskName = taskVo.taskName;
@@ -113,7 +119,6 @@ package com.asokorea.model.vo
 					settingXml.tasks.appendChild(taskRef);
 				}
 			}
-			_taskList = value;
 		}
 		
 		public function get defaultLogDir():File

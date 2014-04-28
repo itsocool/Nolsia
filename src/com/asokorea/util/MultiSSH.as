@@ -20,6 +20,7 @@ package com.asokorea.util
 	
 	[Event(name="connected", type="com.asokorea.event.MultiSSHEvent")]
 	[Event(name="compelete", type="com.asokorea.event.MultiSSHEvent")]
+	[Event(name="message", type="com.asokorea.event.MultiSSHEvent")]
 	[Event(name="loginFail", type="com.asokorea.event.MultiSSHEvent")]
 	[Event(name="timeout", type="com.asokorea.event.MultiSSHEvent")]
 	[Event(name="sshError", type="com.asokorea.event.MultiSSHEvent")]
@@ -106,7 +107,16 @@ package com.asokorea.util
 				
 				if(result && StringUtil.trim(result).length > 0)
 				{
-					onMessage(StringUtil.trim(result));
+					var lines:Array = result.split(/\n|\r\n/);
+					
+					for each (var line:String in lines) 
+					{
+						if(line)
+						{
+							line = StringUtil.trim(line);
+							onMessage(StringUtil.trim(line));
+						}
+					}
 				}
 			}
 		}
@@ -119,7 +129,16 @@ package com.asokorea.util
 			
 				if(result && StringUtil.trim(result))
 				{
-					onMessage(StringUtil.trim(result));
+					var lines:Array = result.split(/\n|\r\n/);
+					
+					for each (var line:String in lines) 
+					{
+						if(line)
+						{
+							line = StringUtil.trim(line);
+							onMessage(StringUtil.trim(line));
+						}
+					}
 				}
 				
 				if(result && result.indexOf(NO_JAVA) > -1)
@@ -176,7 +195,7 @@ package com.asokorea.util
 							hostVo.ip = ip;
 							hostVo.isConnected = true;
 							result = StringUtil.substitute("[CONNECTED] {0}", ip);
-							runningIPList.addItem(hostVo.ip);
+							runningIPList.addItem(ip);
 							event = new MultiSSHEvent(MultiSSHEvent.CONNECTED, result, hostVo);
 							break;
 						}
@@ -189,7 +208,7 @@ package com.asokorea.util
 							hostVo.ip = ip;
 							hostVo.hostName = hostName;
 
-							var logFile:File = new File(_taskVo.logPath).resolvePath(obj["fileName"]);
+							var logFile:File = new File(_taskVo.logPath).resolvePath(obj["fileName"].toString());
 							
 							if(logFile && logFile.exists && !logFile.isDirectory && logFile.size > 0)
 							{
@@ -197,7 +216,7 @@ package com.asokorea.util
 								hostVo.logFile = logFile;
 								result = StringUtil.substitute("[COMPLETE] {0} {1} {2}", ip, hostName, logFile.name);
 							}
-							runningIPList.removeItemAt(runningIPList.getItemIndex(hostVo.ip));
+							removeRunningIp(ip);
 							event = new MultiSSHEvent(MultiSSHEvent.COMPELETE, result, hostVo);
 							break;
 						}
@@ -208,8 +227,8 @@ package com.asokorea.util
 							ip = obj["ip"].toString();
 							hostVo.ip = ip;
 							hostVo.isConnected = false;
-							result = StringUtil.substitute("[LOGINFAIL] {0} : {1}", ip, obj["message"]);
-							runningIPList.removeItemAt(runningIPList.getItemIndex(hostVo.ip));
+							result = StringUtil.substitute("[LOGINFAIL] {0} : {1}", ip, obj["message"].toString());
+							removeRunningIp(ip);
 							event = new MultiSSHEvent(MultiSSHEvent.LOGIN_FAIL, result, hostVo);
 							break;
 						}
@@ -220,8 +239,8 @@ package com.asokorea.util
 							ip = obj["ip"].toString();
 							hostVo.ip = ip;
 							hostVo.isConnected = false;
-							result = StringUtil.substitute("[TIMEOUT] {0} : {1}", ip, obj["message"]);
-							runningIPList.removeItemAt(runningIPList.getItemIndex(hostVo.ip));
+							result = StringUtil.substitute("[TIMEOUT] {0} : {1}", ip, obj["message"].toString());
+							removeRunningIp(ip);
 							event = new MultiSSHEvent(MultiSSHEvent.TIMEOUT, result, hostVo);
 							break;
 						}
@@ -232,8 +251,8 @@ package com.asokorea.util
 							ip = obj["ip"].toString();
 							hostVo.ip = ip;
 							hostVo.isConnected = false;
-							result = StringUtil.substitute("[SSH_ERROR] {0} : {1}", ip, obj["message"]);
-							runningIPList.removeItemAt(runningIPList.getItemIndex(hostVo.ip));
+							result = StringUtil.substitute("[SSH_ERROR] {0} : {1}", ip, obj["message"].toString());
+							removeRunningIp(ip);
 							event = new MultiSSHEvent(MultiSSHEvent.SSH_ERROR, result, hostVo);
 							break;
 						}
@@ -247,15 +266,20 @@ package com.asokorea.util
 				if(hostVo && hostVo.ip)
 				{
 					ip = hostVo.ip;
-					var idx:int = runningIPList.getItemIndex(ip);
-					
-					if(idx >= 0 && idx < runningIPList.length)
-					{
-						runningIPList.removeItemAt(runningIPList.getItemIndex(idx));
-					}
+					removeRunningIp(ip);
 				}
 
 				event = new MultiSSHEvent(MultiSSHEvent.EXCEPTION, error.name + " : " + error.message);
+			}
+		}
+		
+		public function removeRunningIp(ip:String):void
+		{
+			var idx:int = runningIPList.getItemIndex(ip);
+			
+			if(idx >= 0 && idx < runningIPList.length)
+			{
+				runningIPList.removeItemAt(idx);
 			}
 		}
 		

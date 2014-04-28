@@ -109,10 +109,7 @@ package com.asokorea.controller
 			{
 				appModel.selectedTaskVo.importHostListFile = appModel.selectedHostListFile.nativePath;
 				appModel.selectedTaskVo.save();
-				if(navModel.MAIN_CURRENT_SATAE != NavigationModel.MAIN_FIRST)
-				{
-					getHostList(appModel.selectedHostListFile);				
-				}
+				getHostList(appModel.selectedHostListFile);				
 			}
 		}
 		
@@ -133,17 +130,6 @@ package com.asokorea.controller
 		
 		protected function noJavaHandler(event:Event):void
 		{
-			var excel2xml:Excel2Xml = appModel.excel2Xml;
-			
-			if(excel2xml)
-			{
-				excel2xml.removeEventListener(Event.COMPLETE, onOutputXmlData);
-				excel2xml.removeEventListener(Event.STANDARD_ERROR_CLOSE, onErrorXmlData);
-				excel2xml.removeEventListener("notFoundJava", noJavaHandler);
-				excel2xml.dispose();
-				excel2xml = null;
-			}
-			
 			closeExcel2Xml();
 			closeMSSH();
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_FIRST;			
@@ -156,7 +142,6 @@ package com.asokorea.controller
 				}
 			});
 		}
-
 		
 		public function onOutputXmlData(event:Event):void
 		{
@@ -165,6 +150,7 @@ package com.asokorea.controller
 			var xml:XML = new XML(data);
 			
 			appModel.selectedTaskVo.hostListXml = xml;
+			appModel.selectedTaskVo.save();
 			appModel.hasHostList = !!appModel.selectedTaskVo.hostList;
 			
 			if(appModel.selectedTaskVo.hostList)
@@ -279,13 +265,13 @@ package com.asokorea.controller
 		
 		protected function onSSHMessage(event:MultiSSHEvent):void
 		{
-			trace("onSSHMessage");
+			trace("onSSHMessage", event.data);
 			appModel.standardOutput = StringUtil.trim(event.data) + "\n";			
 		}
 		
 		protected function onSSHError(event:MultiSSHEvent):void
 		{
-			trace("onSSHError");
+			trace("onSSHError", event.data);
 			appModel.standardOutput = StringUtil.trim(event.data) + "\n";			
 		}
 		

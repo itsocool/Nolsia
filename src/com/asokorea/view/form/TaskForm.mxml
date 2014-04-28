@@ -59,7 +59,7 @@
 				
 				if(!_logDir || !_logDir.exists || !_logDir.isDirectory)
 				{
-					_logDir = Global.DEFAULT_LOG_DIR;
+					_logDir = new File(Global.DEFAULT_LOG_DIR.nativePath);
 				}
 				
 				_logDir.addEventListener(Event.SELECT, onSelectDir);
@@ -74,7 +74,17 @@
 
 			protected function browseFile(event:MouseEvent):void
 			{
-				_excelFile = (_taskVo.taskBaseDir) ? _taskVo.taskBaseDir : Global.TASK_BASE_DIR;
+				if(_taskVo.importHostListFile)
+				{
+					_excelFile = new File(_taskVo.importHostListFile);
+				}else if(_taskVo.taskBaseDir && _taskVo.taskBaseDir.exists && _taskVo.taskBaseDir.isDirectory)
+				{
+					_excelFile = new File(_taskVo.taskBaseDir.nativePath);
+				}else
+				{
+					_excelFile = new File(Global.TASK_BASE_DIR.nativePath);
+				}
+				
 				_excelFile.addEventListener(Event.SELECT, onSelectFile);
 				_excelFile.browseForOpen("Select Host list File", Excel2Xml.hostFileTypeFilter);
 			}
@@ -211,7 +221,7 @@
 		<s:HGroup width="100%" height="200" styleName="formElement" verticalAlign="middle">
 			<s:Label text="Command List" width="90"/>
 			<s:TextArea id="txaCommands" width="100%" height="100%" horizontalScrollPolicy="auto"
-						text="{_commands}" verticalScrollPolicy="auto"/>
+						editable="false" text="{_commands}" verticalScrollPolicy="auto"/>
 		</s:HGroup>		
 	</s:BorderContainer>
 

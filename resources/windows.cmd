@@ -1,9 +1,9 @@
 @echo off
 @set currdir=%~dp0
 @cd /d "%currdir%"
-@java -version >NUL 2>&1
+@.\bin\jre7\bin\java -version >NUL 2>&1
 if %ERRORLEVEL% == 0 goto FOUND
- 	echo [ERROR:SYSTEM] Not found java >&2
+ 	echo [EXCEPTION] Not found java >&2
 goto END
 
 :FOUND

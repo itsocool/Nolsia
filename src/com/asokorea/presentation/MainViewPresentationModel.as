@@ -37,11 +37,13 @@ package com.asokorea.presentation
 
 		public function goFirst():void
 		{
+			appModel.settingsVo.load();
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_FIRST;
 		}
 		
 		public function editSettings():void
 		{
+			appModel.settingsVo.load();
 			dispatcher.dispatchEvent(new Event("editSettings"));
 		}
 		
@@ -98,6 +100,9 @@ package com.asokorea.presentation
 		public function clearHostList():void
 		{
 			appModel.selectedTaskVo.hostList = null;
+			appModel.hostCount = 0;
+			appModel.successHostCount = 0;
+			appModel.failHostCount = 0;
 			appModel.hasHostList = false;
 		}
 		

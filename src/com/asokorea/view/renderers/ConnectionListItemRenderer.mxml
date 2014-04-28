@@ -32,6 +32,8 @@
 	</s:HGroup>
 	<s:Label click="onClick(event)" id="btnLabel" text="{data.description}" toolTip="{data.description}" width="100%"
 				 textAlign="right" verticalAlign="middle" color="#4C4C4C" fontSize="12" fontStyle="italic"/>
-	<mx:Image click="onClick(event)" id="btnEdit" toolTip="Edit" width="16" height="16" source="{Icons.PENCIL}" mouseChildren="false" buttonMode="true" />		
-	<mx:Image click="onClick(event)" id="btnDelete" toolTip="Delete" width="16" height="16" source="{Icons.DELETE}" mouseChildren="false" buttonMode="true" />
+	<mx:Image click="onClick(event)" id="btnEdit" toolTip="Edit" width="16" height="16"
+			  source="{Icons.PENCIL}" mouseChildren="false" buttonMode="true" />		
+	<mx:Image click="onClick(event)" id="btnDelete" toolTip="Delete" width="16" height="16"
+			  source="{Icons.DELETE}" mouseChildren="false" buttonMode="true" visible="{!(data.taskName=='_default_')}" />
 </s:ItemRenderer>

@@ -44,6 +44,7 @@ package com.asokorea.controller
 		public function settingsEdit():void
 		{
 			var app:DisplayObject = FlexGlobals.topLevelApplication as DisplayObject;
+			appModel.settingsVo.load();
 			taskModel.settingsForm = PopUpManager.createPopUp(app, SettingsForm, true) as SettingsForm;
 			taskModel.settingsForm.settingsVo = appModel.settingsVo;
 			PopUpManager.centerPopUp(taskModel.settingsForm);

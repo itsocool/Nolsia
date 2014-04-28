@@ -81,7 +81,7 @@ package com.asokorea.model.vo
 			var result:Boolean;
 			var templeteDir:File = Global.TEMPLETE_DIR.resolvePath("task/" + Global.DEFAULT_TASK_NAME);
 			
-			_taskBaseDir = File.userDirectory.resolvePath("task/" + taskName);
+			_taskBaseDir = Global.TASK_BASE_DIR.resolvePath(taskName);
 			
 			if(templeteDir && templeteDir.exists && templeteDir.isDirectory)
 			{
@@ -116,20 +116,20 @@ package com.asokorea.model.vo
 					_configXml.taskBaseDir = <taskBaseDir/>;
 				}
 				
-				_configXml.importHostListFile = Global.cdata(importHostListFile, "importHostListFile");
-				_configXml.exportedHostListFile = Global.cdata(exportedHostListFile, "exportedHostListFile");
-				_configXml.logPath = Global.cdata(logPath, "logPath");
+				_configXml.importHostListFile = Global.cdata(_importHostListFile, "importHostListFile");
+				_configXml.exportedHostListFile = Global.cdata(_exportedHostListFile, "exportedHostListFile");
+				_configXml.logPath = Global.cdata(_logPath, "logPath");
 				
-				_configXml.ssh.user = Global.cdata(sshVo.user, "user");
-				_configXml.ssh.password = Global.cdata(sshVo.password, "password");
-				_configXml.ssh.timeout = sshVo.timeout;
-				_configXml.ssh.maxConnection = sshVo.maxConnection;
-				_configXml.ssh.autoExit = sshVo.autoExit;
+				_configXml.ssh.user = Global.cdata(_sshVo.user, "user");
+				_configXml.ssh.password = Global.cdata(_sshVo.password, "password");
+				_configXml.ssh.timeout = _sshVo.timeout;
+				_configXml.ssh.maxConnection = _sshVo.maxConnection;
+				_configXml.ssh.autoExit = _sshVo.autoExit;
 				_configXml.ssh.commands = <commands/>;
 				
-				for (var i:int = 0; i < sshVo.commands.length; i++) 
+				for (var i:int = 0; i < _sshVo.commands.length; i++) 
 				{
-					_configXml.ssh.commands.appendChild(Global.cdata(sshVo.commands[i], "command"));
+					_configXml.ssh.commands.appendChild(Global.cdata(_sshVo.commands[i], "command"));
 				}
 				
 				Global.saveXml(_configXml, configXmlFile);
@@ -184,7 +184,6 @@ package com.asokorea.model.vo
 		
 		protected function set taskBaseDir(value:File):void
 		{
-			
 			_taskBaseDir = value;
 		}
 		
@@ -242,11 +241,6 @@ package com.asokorea.model.vo
 		{
 			return _configXmlPath;
 		}
-		
-//		private function get hostListXml():XML
-//		{
-//			return _hostListXml;
-//		}
 		
 		public function set hostListXml(value:XML):void
 		{
@@ -307,18 +301,9 @@ package com.asokorea.model.vo
 				var sshXml:XML = XML(value.ssh);
 				
 				_sshVo = new SshVo();
-				sshVo.load(sshXml);
+				_sshVo.load(sshXml);
+				save();
 			}
 		}		
-//		
-//		public function get hostList():ArrayCollection
-//		{
-//			return _hostList;
-//		}
-//		
-//		private function set hostList(value:ArrayCollection):void
-//		{
-//			_hostList = value;
-//		}
 	}
 }

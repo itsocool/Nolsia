@@ -3,7 +3,7 @@
 @cd /d "%currdir%"
 @.\bin\jre7\bin\java -version >NUL 2>&1
 if %ERRORLEVEL% == 0 goto FOUND
- 	echo [EXCEPTION] Not found java >&2
+ 	echo "[EXCEPTION] Not found java">&2
 goto END
 
 :FOUND
@@ -28,7 +28,7 @@ goto END
 	goto END
 	
 :SSH
-	@chcp 65001 > null
+	REM @chcp 65001 > null
 	@set tmp=%~2
 	@set src=%tmp:[_]= %
 	@set taskname=%3

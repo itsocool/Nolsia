@@ -20,7 +20,7 @@ package com.asokorea.util
 	[Event(name="notFoundJava", type="flash.events.Event")]
 	public class Excel2Xml extends EventDispatcher
 	{
-		static public const NOT_FOUND_JAVA:String = "[Not found java]";
+		static public const NOT_FOUND_JAVA:String = "Not found java";
 		static public var hostFileTypeFilter:Array = [
 			new FileFilter("Excel File (*.xls;*.xlsx)", "*.xls;*.xlsx")
 			, new FileFilter("Text File (*.txt;*.xml;*.json,*.csv)", "*.txt;*.xml;*.json,*.csv")
@@ -121,21 +121,26 @@ package com.asokorea.util
 		protected function onExit(event:NativeProcessExitEvent):void
 		{
 			xml = new XMLDocument(_output);
-			process.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
-			process.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
-			process.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onIOErrorData);
-			process.removeEventListener(NativeProcessExitEvent.EXIT, onExit);
+			if(process)
+			{
+				process.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
+				process.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
+				process.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onIOErrorData);
+				process.removeEventListener(NativeProcessExitEvent.EXIT, onExit);
+			}
 			dispatchEvent(new Event(Event.COMPLETE, true));
 		}
 		
 		protected function onIOErrorData(event:IOErrorEvent):void
 		{
-			trace(event.errorID);
-			process.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
-			process.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
-			process.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onIOErrorData);
-			process.removeEventListener(NativeProcessExitEvent.EXIT, onExit);
-			dispatchEvent(new Event(Event.STANDARD_ERROR_CLOSE));
+			if(process)
+			{
+				process.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
+				process.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
+				process.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onIOErrorData);
+				process.removeEventListener(NativeProcessExitEvent.EXIT, onExit);
+				dispatchEvent(new Event(Event.STANDARD_ERROR_CLOSE));
+			}
 		}
 		
 		public function dispose():void

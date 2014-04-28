@@ -1,6 +1,5 @@
 package com.asokorea.presentation
 {
-
 	import com.asokorea.event.FileEventEX;
 	import com.asokorea.event.HostEvent;
 	import com.asokorea.event.TaskEvent;

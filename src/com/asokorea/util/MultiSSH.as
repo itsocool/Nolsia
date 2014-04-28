@@ -84,7 +84,7 @@ package com.asokorea.util
 			var i:int = 0;
 			var id:uint = setInterval(function():void{
 				
-				if(i < 3)
+				if(i < 2)
 				{
 					if(runningIPList is ArrayCollection && runningIPList.length > 0)
 					{
@@ -95,7 +95,7 @@ package com.asokorea.util
 
 				clearInterval(id);
 				dispatchEvent(e);
-			}, 1000); 
+			}, 500); 
 			
 		}
 

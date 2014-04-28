@@ -33,7 +33,7 @@ goto END
 	@set src=%tmp:[_]= %
 	@set taskname=%3
 	
-	.\bin\jre7\bin\java -jar .\bin\MultiSSH.jar "%src%" %taskname%
+	.\bin\jre7\bin\java -Xms32m -Xmx512m -jar .\bin\MultiSSH.jar "%src%" %taskname%
 	goto END	
 	
 :END

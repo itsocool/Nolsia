@@ -221,7 +221,7 @@
 		<s:HGroup width="100%" height="200" styleName="formElement" verticalAlign="middle">
 			<s:Label text="Command List" width="90"/>
 			<s:TextArea id="txaCommands" width="100%" height="100%" horizontalScrollPolicy="auto"
-						editable="false" text="{_commands}" verticalScrollPolicy="auto"/>
+						text="{_commands}" verticalScrollPolicy="auto"/>
 		</s:HGroup>		
 	</s:BorderContainer>
 

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:MXDataGridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+						  xmlns:s="library://ns.adobe.com/flex/spark" 
+						  xmlns:mx="library://ns.adobe.com/flex/mx" 
+						  focusEnabled="true">
+	<fx:Script>
+		<![CDATA[
+			import com.asokorea.model.enum.Icons;
+			import com.asokorea.model.vo.HostVo;
+			import com.asokorea.util.Global;
+
+			private var warningIcon:Class = Icons.WARNING;
+
+			[Bindable]
+			private var _visible:Boolean;
+			
+			override public function set data(value:Object):void
+			{
+				super.data = value;
+
+				_visible = false;
+				
+				var hostVo:HostVo = value as HostVo;
+				
+				if(hostVo is HostVo && hostVo.output)
+				{
+					_visible = true;
+				}
+			}
+
+			protected function onOpenError(event:MouseEvent):void
+			{
+				if(data is HostVo)
+				{
+					var hostVo:HostVo = data as HostVo;
+					
+					if(hostVo && hostVo.output && hostVo.taskName)
+					{
+						var file:File = Global.TASK_BASE_DIR.resolvePath(hostVo.taskName);
+						var fileStream:FileStream = null;
+						
+						if(file && file.exists && file.isDirectory)
+						{
+							var str:String = hostVo.output.replace(/\n/,File.lineEnding);
+							
+							file = file.resolvePath(hostVo.ip + "_err.txt");
+							fileStream = new FileStream();
+							fileStream.open(file, FileMode.WRITE);
+							fileStream.writeUTFBytes(str);
+							fileStream.close();
+							fileStream = null;
+							file.openWithDefaultApplication();
+						}
+					}
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<s:layout>
+		<s:HorizontalLayout horizontalAlign="center" verticalAlign="middle" />
+	</s:layout>
+	<mx:LinkButton click="onOpenError(event)" icon="{Icons.WARNING}" visible="{_visible}" toolTip="{data.output}"/>
+</s:MXDataGridItemRenderer>

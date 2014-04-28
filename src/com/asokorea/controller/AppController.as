@@ -223,7 +223,6 @@ package com.asokorea.controller
 		
 		protected function onSSHConnected(event:MultiSSHEvent):void
 		{
-			trace("onSSHConnected");
 			var eventHostVo:HostVo = event.hostVo;
 			var hostVo:HostVo = appModel.selectedTaskVo.getHostVo(eventHostVo.ip);
 			var result:String = "";
@@ -243,7 +242,6 @@ package com.asokorea.controller
 		
 		protected function onSSHCompelete(event:MultiSSHEvent):void
 		{
-			trace("onSSHCompelete");
 			var eventHostVo:HostVo = event.hostVo;
 			var hostVo:HostVo = appModel.selectedTaskVo.getHostVo(eventHostVo.ip);
 			var result:String = "";
@@ -265,13 +263,26 @@ package com.asokorea.controller
 		
 		protected function onSSHMessage(event:MultiSSHEvent):void
 		{
-			trace("onSSHMessage", event.data);
+			var hostVo:HostVo = event.hostVo;
+			
+			if(hostVo is HostVo)
+			{
+				event.hostVo.output ||= "";
+				event.hostVo.output += StringUtil.trim(event.data) + "\n";
+			}
 			appModel.standardOutput = StringUtil.trim(event.data) + "\n";			
 		}
 		
 		protected function onSSHError(event:MultiSSHEvent):void
 		{
-			trace("onSSHError", event.data);
+			var hostVo:HostVo = event.hostVo;
+			
+			if(hostVo is HostVo)
+			{
+				hostVo = appModel.selectedTaskVo.getHostVo(hostVo.ip);
+				hostVo.output ||= "";
+				hostVo.output += StringUtil.trim(event.data) + "\n";
+			}
 			appModel.standardOutput = StringUtil.trim(event.data) + "\n";			
 		}
 		

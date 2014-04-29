@@ -9,6 +9,9 @@ package com.asokorea.model.enum
 		[Embed(source="assets/icons/add.png")]
 		public static const ADD:Class;
 
+		[Embed(source="assets/icons/application_xp_terminal.png")]
+		public static const APPLICATION_XP_TERMINAL:Class;
+
 		[Embed(source="assets/icons/arrow_left.png")]
 		public static const ARROW_LEFT:Class;
 

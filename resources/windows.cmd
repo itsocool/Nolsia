@@ -18,8 +18,7 @@ goto END
 
 	if %1 == excel goto EXCEL
 	if %1 == ssh goto SSH
-	if %1 == explorer goto EXPLORER
-	if %1 == open goto OPEN
+	if %1 == shell goto SHELL
 
 :EXCEL
 	@set tmp=%~2
@@ -35,5 +34,11 @@ goto END
 	
 	.\bin\jre7\bin\java -Xms32m -Xmx512m -jar .\bin\MultiSSH.jar "%src%" %taskname%
 	goto END	
+
+:SHELL
+ 	start bin\putty.exe %2	
+
+	goto END
 	
+
 :END

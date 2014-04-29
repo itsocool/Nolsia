@@ -145,7 +145,8 @@
 				<mx:DataGrid id="dgHost" dataProvider="{model.appModel.selectedTaskVo.hostList}" width="100%"
 							 itemClick="onHostClick(event)" height="100%" change="setColumnSort(dgUser, 0)">
 					<mx:columns>
-						<mx:DataGridColumn dataField="ip" headerText="IP" width="110" headerStyleName="gridColHeader" />
+						<mx:DataGridColumn dataField="ip" headerText="IP" width="120" headerStyleName="gridColHeader"
+										   itemRenderer="com.asokorea.view.renderers.IPItemRenderer"/>
 						<mx:DataGridColumn dataField="hostName" headerText="Hhost Name" width="170" headerStyleName="gridColHeader" />
 						<mx:DataGridColumn dataField="isConnected" headerText="Connect" width="60" headerStyleName="gridColHeader"
 										   itemRenderer="com.asokorea.view.renderers.SelectedItemRenderer"/>

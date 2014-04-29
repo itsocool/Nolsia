@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <update xmlns="http://ns.adobe.com/air/framework/update/description/3.1">
-	<versionNumber>0.9.4</versionNumber>
-	<versionLabel>v0.9.4 RC9</versionLabel>
-	<url><![CDATA[https://bitbucket.org/yesican/nolsia/downloads/Nolsia-0.9.4RC10.exe]]></url>
+	<versionNumber>0.9.5</versionNumber>
+	<versionLabel>v0.9.5 RC11</versionLabel>
+	<url><![CDATA[https://bitbucket.org/yesican/nolsia/downloads/Nolsia-0.9.5RC11.exe]]></url>
 	<description>
-		<text xml:lang="ko"><![CDATA[릴리즈 후보10 입니다.]]></text> 
+		<text xml:lang="ko"><![CDATA[릴리즈 후보11 입니다.]]></text> 
 		<text xml:lang="en"><![CDATA[This is the latest version of the Release Candidate]]></text>
 	</description>
 </update>

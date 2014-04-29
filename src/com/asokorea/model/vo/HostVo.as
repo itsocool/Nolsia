@@ -51,7 +51,7 @@ package com.asokorea.model.vo
 						hostName = matches[0].toString().replace(/hostname /,"");
 					}
 					
-					matches = str.match(/username .+/g);
+					matches = str.match(/username .+ (privilege [0-9]+ secret [0-9]+ .+|password [0-9]+ [0-9]+)/g);
 					
 					if(matches)
 					{
@@ -65,10 +65,15 @@ package com.asokorea.model.vo
 							user.no = i + 1;
 							user.userName = (arr[1]) ? StringUtil.trim(arr[1]) : null;
 							user.privilege = isNaN(parseInt(arr[3])) ? NaN : parseInt(arr[3]);
-							user.secret = isNaN(parseInt(arr[5])) ? NaN : parseInt(arr[5]);
-							user.hash =(arr[6]) ? StringUtil.trim(arr[6]) : null;
+							
+							if(arr.length > 5)
+							{
+								user.secret = isNaN(parseInt(arr[5])) ? NaN : parseInt(arr[5]);
+								user.hash =(arr[6]) ? StringUtil.trim(arr[6]) : null;
+							}
 							userMap[user.userName] = user;
 							userList.addItem(user);
+							
 						}
 					}
 					

@@ -1,5 +1,6 @@
 package com.asokorea.model
 {
+	import com.asokorea.model.vo.HostVo;
 	import com.asokorea.model.vo.SettingsVo;
 	import com.asokorea.model.vo.TaskVo;
 	import com.asokorea.supportclass.NativeUpdater;
@@ -8,6 +9,7 @@ package com.asokorea.model
 	
 	import flash.filesystem.File;
 	import flash.net.FileFilter;
+	import flash.utils.Dictionary;
 	
 	import mx.collections.ArrayCollection;
 	
@@ -49,5 +51,15 @@ package com.asokorea.model
 		public var excel2Xml:Excel2Xml;
 		
 		public var multiSSH:MultiSSH;
+		
+		public var standardUserList:ArrayCollection;
+
+		public var standardUserMap:Dictionary;
+
+		public var standardUserCount:int = 0;
+		
+		public var totalUsersCount:int = 0;
+		
+		public var userTypeList:ArrayCollection;
 	}
 }

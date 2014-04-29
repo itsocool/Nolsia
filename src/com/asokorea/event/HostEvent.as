@@ -7,6 +7,7 @@ package com.asokorea.event
 	public class HostEvent extends Event
 	{
 		public static const SET_DEFAULT:String = "setDefault";
+		public static const OPEN_REPORT:String = "openReport";
 		public static const ADD:String = "add";
 		public static const OPEN:String = "open";
 		public static const EDIT:String = "edit";

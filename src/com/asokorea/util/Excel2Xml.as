@@ -28,7 +28,7 @@ package com.asokorea.util
 		];
 		
 		public var cmdFile:File;
-		public var excelFile:File;
+		public var xmlFile:File;
 		public var xml:XMLDocument;
 		public var consoleEncoding:String = "EUC-KR";
 		
@@ -64,7 +64,7 @@ package com.asokorea.util
 		{
 			this.useJar = useJar;
 			this.cmdFile = File.applicationDirectory.resolvePath("windows.cmd");
-			this.excelFile = excelFile;
+			this.xmlFile = excelFile;
 			dispatchEvent(new Event(Event.INIT, true));
 		}
 		
@@ -75,7 +75,7 @@ package com.asokorea.util
 			var processArgs:Vector.<String>=new Vector.<String>();
 
 			processArgs.push(ExternalCommandType.EXCEL);
-			processArgs.push(excelFile.nativePath.replace(/ /g,"[_]"));
+			processArgs.push(xmlFile.nativePath.replace(/ /g,"[_]"));
 			
 			nativeProcessStartupInfo.executable = cmdFile;
 			nativeProcessStartupInfo.arguments = processArgs;
@@ -146,7 +146,7 @@ package com.asokorea.util
 		public function dispose():void
 		{
 			if(cmdFile)	cmdFile = null;
-			if(excelFile) excelFile = null;
+			if(xmlFile) xmlFile = null;
 			if(xml) xml = null;
 			if(process){
 				if(process.running) process.exit(true);

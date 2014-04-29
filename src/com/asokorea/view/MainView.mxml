@@ -8,6 +8,7 @@
 		 currentState="{ model.currentState }">
 	<fx:Script>
 		<![CDATA[
+			import com.asokorea.model.AppModel;
 			import com.asokorea.model.enum.Icons;
 			import com.asokorea.model.vo.HostVo;
 			import com.asokorea.presentation.MainViewPresentationModel;
@@ -56,6 +57,20 @@
 				model.abortUpdate();
 			}
 
+			protected function onSelectHost(event:ListEvent):void
+			{
+				if(dgHost.selectedItem is HostVo)
+				{
+					var hostVo:HostVo = dgHost.selectedItem as HostVo;
+					
+					if(hostVo && !hostVo.isDefault)
+					{
+						hostVo.isDefault = true;
+						onHostClick(event);
+					}
+				}
+			}
+			
 		]]>
 	</fx:Script>
 	<fx:Style>
@@ -140,19 +155,20 @@
 					<s:RadioButton value="Success" groupName="hostFilter" label="Success({model.appModel.successHostCount})" />
 					<s:RadioButton value="Fail" groupName="hostFilter" label="Fail({model.appModel.failHostCount})" />
 					<mx:Spacer width="100%"/>
-					<!--<mx:Button click="model.onGetUser" label="Get Users"/>-->
+					<mx:Button icon="{Icons.PAGE_EXCEL}" click="model.exportExcel()" label="Export Excel"
+							   enabled="{model.appModel.standardUserCount > 0}"  enabled.PROCESS="false"/>
 				</s:HGroup>
 				<mx:DataGrid id="dgHost" dataProvider="{model.appModel.selectedTaskVo.hostList}" width="100%"
-							 itemClick="onHostClick(event)" height="100%" change="setColumnSort(dgUser, 0)">
+							 selectedIndex.OPEN="0" selectedIndex="-1"
+							 itemClick="onHostClick(event)" height="100%" change="onSelectHost(event)">
 					<mx:columns>
-						<mx:DataGridColumn dataField="ip" headerText="IP" width="120" headerStyleName="gridColHeader"
-										   itemRenderer="com.asokorea.view.renderers.IPItemRenderer"/>
-						<mx:DataGridColumn dataField="hostName" headerText="Hhost Name" width="170" headerStyleName="gridColHeader" />
+						<mx:DataGridColumn dataField="ip" headerText="IP" width="120" headerStyleName="gridColHeader" />
+						<mx:DataGridColumn dataField="hostName" headerText="Hhost Name" width="180" headerStyleName="gridColHeader" />
 						<mx:DataGridColumn dataField="isConnected" headerText="Connect" width="60" headerStyleName="gridColHeader"
 										   itemRenderer="com.asokorea.view.renderers.SelectedItemRenderer"/>
-						<mx:DataGridColumn headerText="Open" width="40" textAlign="right" headerStyleName="gridColHeader"
+						<mx:DataGridColumn headerText="Open" width="60" textAlign="right" headerStyleName="gridColHeader"
 										   itemRenderer="com.asokorea.view.renderers.CompleteItemRenderer" />
-						<mx:DataGridColumn headerText="Error" width="40" textAlign="right" headerStyleName="gridColHeader"
+						<mx:DataGridColumn headerText="Error" width="60" textAlign="right" headerStyleName="gridColHeader"
 										   itemRenderer="com.asokorea.view.renderers.ErrorItemRenderer" />
 						<mx:DataGridColumn labelFunction="userCountFunc" headerText="count" width="60" textAlign="right" headerStyleName="gridColHeader" />
 						<mx:DataGridColumn dataField="isDefault" headerText="Standard" textAlign="center" headerStyleName="gridColHeader"
@@ -190,9 +206,13 @@
 					</mx:DataGrid>-->
 					<mx:VDividedBox id="rightSidePanel" width="100%" height="100%">
 						<s:VGroup width="100%" height="75%">
-							<s:HGroup includeIn="OPEN" width="100%">
-								<s:Button />
-								<s:Label />
+							<s:HGroup width="100%">
+								<mx:Button label="analysis Users" click="model.analysisUsers()" />
+								<mx:Label text="All ({model.appModel.totalUsersCount})" />
+								<mx:Label text="Standard Count ({model.appModel.standardUserCount})" />
+								<mx:Label text="Non Standard Count({model.appModel.totalUsersCount - model.appModel.standardUserCount})" />
+								<s:Spacer width="100%" />
+								<mx:Button icon="{Icons.DISK}" label="Users report" click="model.openUsersReport()" enabled="{!!model.appModel.standardUserCount}" />
 							</s:HGroup>
 							<mx:DataGrid id="dgUser" width="100%" height="100%"
 										 dataProvider="{HostVo(dgHost.selectedItem).userList}">

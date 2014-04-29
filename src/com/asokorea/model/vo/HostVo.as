@@ -26,6 +26,7 @@ package com.asokorea.model.vo
 		public var taskName:String;
 		public var output:String;
 		public var userList:ArrayCollection;
+		public var type:String;
 		
 		public function get logFile():File
 		{

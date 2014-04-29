@@ -179,5 +179,20 @@ package com.asokorea.presentation
 				}
 			});
 		}
+		
+		public function analysisUsers():void
+		{
+			dispatcher.dispatchEvent(new Event("analysisUsers"));
+		}
+		
+		public function openUsersReport():void
+		{
+			dispatcher.dispatchEvent(new Event("openUsersReport"));
+		}
+		
+		public function exportExcel():void
+		{
+			dispatcher.dispatchEvent(new Event("exportExcel"));
+		}
 	}
 }

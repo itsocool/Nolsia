@@ -8,6 +8,7 @@ package com.asokorea.controller
 	import com.asokorea.model.NavigationModel;
 	import com.asokorea.model.vo.HostVo;
 	import com.asokorea.model.vo.SettingsVo;
+	import com.asokorea.model.vo.UserVo;
 	import com.asokorea.supportclass.NativeUpdater;
 	import com.asokorea.util.Excel2Xml;
 	import com.asokorea.util.Global;
@@ -20,9 +21,16 @@ package com.asokorea.controller
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
+	import flash.filesystem.FileMode;
+	import flash.filesystem.FileStream;
 	import flash.net.URLRequest;
 	import flash.net.navigateToURL;
+	import flash.utils.Dictionary;
+	import flash.xml.XMLNode;
 	
+	import flashx.textLayout.events.DamageEvent;
+	
+	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.events.CloseEvent;
 	import mx.utils.StringUtil;
@@ -322,10 +330,241 @@ package com.asokorea.controller
 				}
 			}
 			
+			if(appModel.successHostCount > 0)
+			{
+				analysisUsers();
+			}else
+			{
+				appModel.userTypeList = null;
+				appModel.standardUserList = null;
+				appModel.standardUserMap = null;
+				appModel.standardUserCount = 0;
+				appModel.totalUsersCount = 0;
+			}
+			
 			appModel.failHostCount = appModel.hostCount - appModel.successHostCount;
 			appModel.standardOutput = "Task Completed!";
 			Alert.show("Task Completed!");
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
+		}
+		
+		[EventHandler("exportExcel")]
+		public function exportExcel():void
+		{
+			var xml:XML = 
+			<report>
+				<summary>
+					<total>{appModel.hostCount}</total>
+					<success>{appModel.successHostCount}</success>
+				</summary>
+				<createDate>{new Date().time}</createDate>
+				<hosts>
+				</hosts>
+			</report>;
+			
+			for each (var hostVo:HostVo in appModel.selectedTaskVo.hostList) 
+			{
+				var userCount:int = (hostVo.isComplete && hostVo.userList) ? hostVo.userList.length : 0; 
+				var errorLog:String = (hostVo.isComplete && hostVo.isConnected) ? "" : hostVo.output; 
+				
+				var host:XML = 
+				<host>
+					<ip>{hostVo.ip}</ip>
+					<hostName>{hostVo.ip}</hostName>
+					<isComplete>{hostVo.isConnected}</isComplete>
+					<userCount>{userCount}</userCount>
+					<errorLog>{errorLog}</errorLog>
+				</host>;
+				
+				xml..hosts.appendChild(host);
+			}
+			
+			var file:File = appModel.selectedTaskVo.taskBaseDir.resolvePath("report.xml");
+			Global.saveXml(xml, file);
+			file.openWithDefaultApplication();
+		}
+		
+		[EventHandler("analysisUsers")]
+		public function analysisUsers():void
+		{
+			var maxCount:int;
+			var maxType:String;
+			
+			appModel.standardUserCount = 0;
+			appModel.totalUsersCount = 0;
+			
+			for each (var hostVo:HostVo in appModel.selectedTaskVo.hostList) 
+			{
+				if(hostVo.userList && hostVo.userList.length > 0)
+				{
+					appModel.totalUsersCount ++;
+					
+					if(!appModel.userTypeList || appModel.userTypeList.length < 1)
+					{
+						appModel.userTypeList = new ArrayCollection();
+						appModel.userTypeList.addItem([hostVo]);
+						
+						maxCount = 1;
+						maxType = "0";	
+						
+						appModel.standardUserList = hostVo.userList;
+						appModel.standardUserMap = hostVo.userMap;
+						continue;
+					}
+
+					var matched:Boolean = false;
+					var defaultHostVo:HostVo = null;
+					var types:Array = null;
+					
+					for (var i:int = 0; i < appModel.userTypeList.length; i++) 
+					{
+						types = appModel.userTypeList.getItemAt(i) as Array;
+						defaultHostVo = types[0] as HostVo;
+						
+						if(hostVo == defaultHostVo || hostVo.equalsToDefaultUser(defaultHostVo))
+						{
+							matched = true;
+							hostVo.type = i.toString();
+							types.push(hostVo);
+						}
+						
+						if(maxCount < types.length && maxCount <= appModel.selectedTaskVo.hostList.length / 2)
+						{
+							maxCount = types.length; 
+							maxType = defaultHostVo.type;
+							appModel.standardUserList = defaultHostVo.userList;
+							appModel.standardUserMap = defaultHostVo.userMap;
+						}
+					}
+					
+					if(!matched)
+					{
+						types = [hostVo];
+						appModel.userTypeList.addItem(types);
+						hostVo.type = appModel.userTypeList.getItemIndex(types).toString();
+					}
+				}
+			}
+			
+			appModel.standardUserCount = maxCount;
+			
+			var idx:int = parseInt(maxType);
+			var standardList:Array = appModel.userTypeList.getItemAt(idx) as Array;
+			
+			for each (var standardHostVo:HostVo in standardList)
+			{
+				standardHostVo.isDefault = true;
+			}
+		}
+		
+		[EventHandler("openUsersReport")]
+		public function openUsersReport():void
+		{
+			var file:File = appModel.selectedTaskVo.taskBaseDir.resolvePath("report.txt");
+			var fileStream:FileStream = new FileStream();
+			var br:String = File.lineEnding;
+			var standardUserList:ArrayCollection = appModel.standardUserList;
+			var standardUserMap:Dictionary = appModel.standardUserMap;;
+			var reportFormat:String = "";
+			
+			reportFormat += "## Users Report ##" + br;
+			reportFormat += br;
+			reportFormat += "[Task result]" + br;
+			reportFormat += "Total Host Count : " + appModel.selectedTaskVo.hostList.length + br;
+			reportFormat += "Success Host Count : " + appModel.successHostCount + br;
+			reportFormat += "Fail Host Count : " + (appModel.selectedTaskVo.hostList.length - appModel.successHostCount) + br;
+			reportFormat += br;
+			reportFormat += "[Task result]" + br;
+			reportFormat += "Total Host Count : " + appModel.selectedTaskVo.hostList.length + br;
+			reportFormat += "Success Host Count : " + appModel.successHostCount + br;
+			reportFormat += "Fail Host Count : " + (appModel.selectedTaskVo.hostList.length - appModel.successHostCount) + br;
+			reportFormat += br;
+			reportFormat += "[User list analysis result]" + br;
+			reportFormat += "Total Available user list Count : " + appModel.totalUsersCount + br;
+			reportFormat += "Standard user list Count : " + appModel.standardUserCount + br;
+			reportFormat += "Exception user list Count : " + (appModel.totalUsersCount - appModel.standardUserCount) + br;
+			reportFormat += br;
+			reportFormat += "[Standard user list]" + br;
+			reportFormat += "User count : " + appModel.standardUserList.length + br;
+			reportFormat += br;
+			for each (var standardUserVo:UserVo in appModel.standardUserList) 
+			{
+				reportFormat += getUserString(standardUserVo) + br;
+			}
+
+			var idx:int = 0;
+			
+			for each (var hostVo:HostVo in appModel.selectedTaskVo.hostList) 
+			{
+				if(!hostVo.isDefault && hostVo.userList && hostVo.userList.length > 0)
+				{
+					idx ++;
+					reportFormat += br;
+					reportFormat += "[Exception user list #" + idx + "]" + br;
+					reportFormat += "IP : " + hostVo.ip + br;
+					reportFormat += "Host Name : " + hostVo.hostName + br;
+					reportFormat += "User count : " + hostVo.userList.length + br;
+					reportFormat += br;
+					
+					var adds:Array = [];
+					var subs:Array = [];
+					var diffs:Array = [];
+					
+					for each (var userVo:UserVo in hostVo.userList) 
+					{
+						var item:UserVo = standardUserMap[userVo.userName] as UserVo;
+						
+						if(!(item is UserVo))
+						{
+							adds.push(reportFormat += "+ " + getUserString(userVo) + br);
+						}else {
+							var userName:String = item.userName;
+							var privilege:int = item.privilege;
+							var secret:int = item.secret;
+							var hash:String = item.hash;
+
+							if(userVo.userName == userName && (userVo.privilege != privilege || userVo.secret != secret))
+							{
+								diffs.push(reportFormat += "* " + getUserString(userVo) + br);
+							}
+						}
+					}
+					
+					for each (var sUser:UserVo in appModel.standardUserList) 
+					{
+						if(!(hostVo.userMap[sUser.userName] is UserVo))
+						{
+							diffs.push(reportFormat += "- " + getUserString(sUser) + br);
+						}
+					}
+				}
+			}
+			
+			fileStream.open(file, FileMode.WRITE);
+			fileStream.writeUTFBytes(reportFormat);
+			file.openWithDefaultApplication();
+			fileStream.close();
+			fileStream = null;
+			file = null;
+		}
+		
+		private function getUserString(userVo:UserVo):String
+		{
+			var result:String = "";
+			
+			if(userVo.secret && userVo.hash)
+			{
+				result += "username " + userVo.userName;
+				result += " privilege " + userVo.privilege;
+				result += " secret " + userVo.secret;
+				result += " hash " + userVo.hash;
+			}else{
+				result += "username " + userVo.userName;
+				result += " password " + userVo.privilege;
+				result += " hash " + userVo.hash;
+			}
+			
+			return result;
 		}
 		
 		private function closeExcel2Xml():void

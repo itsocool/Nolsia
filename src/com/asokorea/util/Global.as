@@ -174,6 +174,7 @@ package com.asokorea.util
 				fileStream.open(file, FileMode.WRITE); 
 				fileStream.writeUTFBytes(data);
 				fileStream.close();
+				fileStream = null;
 			} 
 			catch(error:Error) 
 			{

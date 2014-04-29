@@ -11,31 +11,31 @@
 			import mx.controls.DataGrid;
 			protected function onClick(event:MouseEvent):void
 			{
-				var grid:DataGrid = listData.owner as DataGrid;
-				
-				if(grid is DataGrid)
-				{
-					var list:ArrayCollection = grid.dataProvider as ArrayCollection;
-					
-					if(list is ArrayCollection)
-					{
-						for each (var host:HostVo in list) 
-						{
-							if(data is HostVo && host.ip == HostVo(data).ip)
-							{
-								data.isDefault = true;
-								chkStanard.selected = true;
-								trace(host.no, true);
-							}else{
-								host.isDefault = false;
-								trace(host.no, false);
-							}
-						}
-						
-						grid.validateNow();
-						list.refresh();
-					}
-				}
+//				var grid:DataGrid = listData.owner as DataGrid;
+//				
+//				if(grid is DataGrid)
+//				{
+//					var list:ArrayCollection = grid.dataProvider as ArrayCollection;
+//					
+//					if(list is ArrayCollection)
+//					{
+//						for each (var host:HostVo in list) 
+//						{
+//							if(data is HostVo && host.ip == HostVo(data).ip)
+//							{
+//								data.isDefault = true;
+//								chkStanard.selected = true;
+//								trace(host.no, true);
+//							}else{
+//								host.isDefault = false;
+//								trace(host.no, false);
+//							}
+//						}
+//						
+//						grid.validateNow();
+//						list.refresh();
+//					}
+//				}
 			}
 		]]>
 	</fx:Script>

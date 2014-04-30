@@ -45,7 +45,7 @@ goto END
 	goto END	
 
 :SHELL
- 	start bin\putty.exe %2	
+ 	start bin\putty.exe -ssh %2	
 
 	goto END
 	

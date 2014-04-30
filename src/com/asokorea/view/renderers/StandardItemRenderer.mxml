@@ -9,36 +9,25 @@
 			
 			import mx.collections.ArrayCollection;
 			import mx.controls.DataGrid;
-			protected function onClick(event:MouseEvent):void
+			protected function onChange(event:Event):void
 			{
-//				var grid:DataGrid = listData.owner as DataGrid;
-//				
-//				if(grid is DataGrid)
-//				{
-//					var list:ArrayCollection = grid.dataProvider as ArrayCollection;
-//					
-//					if(list is ArrayCollection)
-//					{
-//						for each (var host:HostVo in list) 
-//						{
-//							if(data is HostVo && host.ip == HostVo(data).ip)
-//							{
-//								data.isDefault = true;
-//								chkStanard.selected = true;
-//								trace(host.no, true);
-//							}else{
-//								host.isDefault = false;
-//								trace(host.no, false);
-//							}
-//						}
-//						
-//						grid.validateNow();
-//						list.refresh();
-//					}
-//				}
+				var hostVo:HostVo = data as HostVo;
+				
+				if(hostVo && hostVo.isComplete && !hostVo.isDefault)
+				{
+					data.isDefault = true;
+					chkStanard.selected = true;
+				}else{
+					data.isDefault = false;
+					chkStanard.selected = false;
+				}
+				
+				validateNow();
 			}
+			
 		]]>
 	</fx:Script>
 	
-	<mx:CheckBox id="chkStanard" verticalCenter="0" horizontalCenter="0" click="onClick(event)" selected="{data.isDefault}" />
+	<mx:CheckBox id="chkStanard" verticalCenter="0" horizontalCenter="0" change="onChange(event)"
+				 enabled="{data.isComplete}" selected="{data.isDefault}" />
 </s:MXDataGridItemRenderer>

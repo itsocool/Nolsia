@@ -73,7 +73,7 @@ package com.asokorea.supportclass
 		protected function updateDescLoader_ioErrorHandler(event:IOErrorEvent):void
 		{
 			closeUpdateDescLoader(URLLoader(event.currentTarget));
-			Alert.show("ERROR loading update descriptor:", event.text);
+			trace("ERROR loading update descriptor:", event.text);
 		}
 		
 		protected function closeUpdateDescLoader(loader:URLLoader):void

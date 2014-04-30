@@ -78,6 +78,9 @@ package com.asokorea.model.enum
 		[Embed(source="assets/icons/stop.png")]
 		public static const STOP:Class;
 
+		[Embed(source="assets/icons/table_refresh.png")]
+		public static const TABLE_REFRESH:Class;
+
 		[Embed(source="assets/icons/tick.png")]
 		public static const TICK:Class;
 

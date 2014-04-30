@@ -127,6 +127,11 @@ package com.asokorea.presentation
 			}
 		}
 		
+		public function hostSetDefault(hostVo:HostVo):void
+		{
+			dispatcher.dispatchEvent(new HostEvent(HostEvent.SET_DEFAULT, hostVo));
+		}
+		
 		public function openFile(path:String):void
 		{
 			var file:File = new File(path);

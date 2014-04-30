@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+					   xmlns:s="library://ns.adobe.com/flex/spark"
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   title="{appModel.appName} {appModel.appVersionLabel}"
+					   width="1280" height="800" showStatusBar="false">
+	<fx:Style source="Nolsia.css" />
+	<fx:Script>
+		<![CDATA[
+			import com.asokorea.model.AppModel;
+			
+			[Bindable]
+			[Inject]
+			public var appModel:AppModel;
+			
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<local:AppContext xmlns:local="*" />
+
+		<!-- Logger -->
+		<tb:ThunderBoltTarget id="thunderboltTarget" xmlns:tb="org.osflash.thunderbolt.*" />
+
+	</fx:Declarations>
+	<s:layout>
+		<s:HorizontalLayout />
+	</s:layout>
+
+	<view:MainView xmlns:view="com.asokorea.view.*" width="100%" height="100%" left="10" top="10" right="10" bottom="10" />
+
+</s:WindowedApplication>

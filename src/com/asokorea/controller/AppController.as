@@ -10,6 +10,7 @@ package com.asokorea.controller
 	import com.asokorea.model.vo.SettingsVo;
 	import com.asokorea.model.vo.UserVo;
 	import com.asokorea.supportclass.NativeUpdater;
+	import com.asokorea.util.DateUtil;
 	import com.asokorea.util.Excel2Xml;
 	import com.asokorea.util.Global;
 	import com.asokorea.util.MultiSSH;
@@ -25,6 +26,7 @@ package com.asokorea.controller
 	import flash.filesystem.FileStream;
 	import flash.net.URLRequest;
 	import flash.net.navigateToURL;
+	import flash.text.ReturnKeyLabel;
 	import flash.utils.Dictionary;
 	import flash.xml.XMLNode;
 	
@@ -33,6 +35,7 @@ package com.asokorea.controller
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.events.CloseEvent;
+	import mx.formatters.DateFormatter;
 	import mx.utils.StringUtil;
 	
 	public class AppController
@@ -306,14 +309,116 @@ package com.asokorea.controller
 		{
 			if(event.hostVo is HostVo)
 			{
-				for each (var hostVo:HostVo in appModel.selectedTaskVo.hostList) 
-				{
-					hostVo.equalsToDefaultUser(event.hostVo);
-				}
+				var selectdHostVo:HostVo = event.hostVo;
 				
-				appModel.selectedTaskVo.hostList.refresh();
+				if(selectdHostVo.isDefault)
+				{
+					setDefaultHostVo(selectdHostVo);
+				}else{
+					setDefaultHostVo(null);
+				}
 			}
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
+		}
+		
+		[EventHandler("analysisUsers")]
+		public function analysisUsers():void
+		{
+			var standardHostVo:HostVo = getMaxUserCountHost();
+			setDefaultHostVo(standardHostVo);
+		}
+		
+		private function getMaxUserCountHost():HostVo
+		{
+			var maxCount:int = 0;
+			var standardHostVo:HostVo;
+			var hosts:Array;
+			
+			for each (var hostVo:HostVo in appModel.selectedTaskVo.hostList) 
+			{
+				hostVo.isDefault = false;
+				hosts = getSameTypeHosts(hostVo);
+				
+				if(hosts && hosts.length > 1)
+				{
+					if(hosts.length > maxCount)
+					{
+						maxCount = hosts.length;
+						standardHostVo = hostVo;
+					}
+					
+					if(maxCount > (appModel.selectedTaskVo.hostList.length / 2))
+					{
+						break;
+					}
+				}
+			}
+			
+			return standardHostVo;
+		}
+		
+		private function setDefaultHostVo(hostVo:HostVo):void
+		{
+			appModel.totalUsersCount = 0;
+			appModel.standardUserCount = 0;
+			appModel.standardUserList = null;
+			appModel.standardUserMap = null;
+			
+			var item:HostVo;
+			
+			if(hostVo)
+			{
+				if(hostVo.isComplete)
+				{
+					hostVo.isDefault = true;
+					appModel.standardUserList = hostVo.userList;
+					appModel.standardUserMap = hostVo.userMap;
+				}else
+				{
+					hostVo.isDefault = false;
+				}
+				
+				for each (item in appModel.selectedTaskVo.hostList) 
+				{
+					item.isDefault = false;
+					
+					if(item.isComplete)
+					{
+						appModel.totalUsersCount ++;
+						if(item.equalsToDefaultUser(hostVo))
+						{
+							item.isDefault = true;
+							appModel.standardUserCount ++;
+						}
+					}
+				}
+			}else
+			{
+				for each (item in appModel.selectedTaskVo.hostList) 
+				{
+					item.isDefault = false;
+				}
+			}
+		}
+		
+		private function getSameTypeHosts(hostVo:HostVo):Array
+		{
+			var result:Array = [];
+			
+			if(hostVo && hostVo.isComplete)
+			{
+				result = [hostVo];
+				
+				for each (var item:HostVo in appModel.selectedTaskVo.hostList) 
+				{
+					if(item.isComplete && item != hostVo && item.equalsToDefaultUser(hostVo))
+					{
+						result.push(item);
+					}
+				}
+			}
+			
+			return result;
 		}
 		
 		protected function onExit(event:NativeProcessExitEvent):void
@@ -351,13 +456,17 @@ package com.asokorea.controller
 		[EventHandler("exportExcel")]
 		public function exportExcel():void
 		{
+			var dateFormatter:DateFormatter = new DateFormatter();
+			dateFormatter.formatString = "YYYY-MM-DD HH:NN:SS"
+			var createDate:Date = new Date();
 			var xml:XML = 
 			<report>
-				<summary>
+				<summary>44
 					<total>{appModel.hostCount}</total>
 					<success>{appModel.successHostCount}</success>
 				</summary>
-				<createDate>{new Date().time}</createDate>
+				<createDate>{dateFormatter.format(createDate)}</createDate>
+				<createTimeStamp>{createDate.time}</createTimeStamp>
 				<hosts>
 				</hosts>
 			</report>;
@@ -370,7 +479,7 @@ package com.asokorea.controller
 				var host:XML = 
 				<host>
 					<ip>{hostVo.ip}</ip>
-					<hostName>{hostVo.ip}</hostName>
+					<hostName>{hostVo.hostName}</hostName>
 					<isComplete>{hostVo.isConnected}</isComplete>
 					<userCount>{userCount}</userCount>
 					<errorLog>{errorLog}</errorLog>
@@ -382,79 +491,6 @@ package com.asokorea.controller
 			var file:File = appModel.selectedTaskVo.taskBaseDir.resolvePath("report.xml");
 			Global.saveXml(xml, file);
 			file.openWithDefaultApplication();
-		}
-		
-		[EventHandler("analysisUsers")]
-		public function analysisUsers():void
-		{
-			var maxCount:int;
-			var maxType:String;
-			
-			appModel.standardUserCount = 0;
-			appModel.totalUsersCount = 0;
-			
-			for each (var hostVo:HostVo in appModel.selectedTaskVo.hostList) 
-			{
-				if(hostVo.userList && hostVo.userList.length > 0)
-				{
-					appModel.totalUsersCount ++;
-					
-					if(!appModel.userTypeList || appModel.userTypeList.length < 1)
-					{
-						appModel.userTypeList = new ArrayCollection();
-						appModel.userTypeList.addItem([hostVo]);
-						
-						maxCount = 1;
-						maxType = "0";	
-						
-						appModel.standardUserList = hostVo.userList;
-						appModel.standardUserMap = hostVo.userMap;
-						continue;
-					}
-
-					var matched:Boolean = false;
-					var defaultHostVo:HostVo = null;
-					var types:Array = null;
-					
-					for (var i:int = 0; i < appModel.userTypeList.length; i++) 
-					{
-						types = appModel.userTypeList.getItemAt(i) as Array;
-						defaultHostVo = types[0] as HostVo;
-						
-						if(hostVo == defaultHostVo || hostVo.equalsToDefaultUser(defaultHostVo))
-						{
-							matched = true;
-							hostVo.type = i.toString();
-							types.push(hostVo);
-						}
-						
-						if(maxCount < types.length && maxCount <= appModel.selectedTaskVo.hostList.length / 2)
-						{
-							maxCount = types.length; 
-							maxType = defaultHostVo.type;
-							appModel.standardUserList = defaultHostVo.userList;
-							appModel.standardUserMap = defaultHostVo.userMap;
-						}
-					}
-					
-					if(!matched)
-					{
-						types = [hostVo];
-						appModel.userTypeList.addItem(types);
-						hostVo.type = appModel.userTypeList.getItemIndex(types).toString();
-					}
-				}
-			}
-			
-			appModel.standardUserCount = maxCount;
-			
-			var idx:int = parseInt(maxType);
-			var standardList:Array = appModel.userTypeList.getItemAt(idx) as Array;
-			
-			for each (var standardHostVo:HostVo in standardList)
-			{
-				standardHostVo.isDefault = true;
-			}
 		}
 		
 		[EventHandler("openUsersReport")]
@@ -487,6 +523,7 @@ package com.asokorea.controller
 			reportFormat += "[Standard user list]" + br;
 			reportFormat += "User count : " + appModel.standardUserList.length + br;
 			reportFormat += br;
+
 			for each (var standardUserVo:UserVo in appModel.standardUserList) 
 			{
 				reportFormat += getUserString(standardUserVo) + br;
@@ -521,7 +558,7 @@ package com.asokorea.controller
 							var userName:String = item.userName;
 							var privilege:int = item.privilege;
 							var secret:int = item.secret;
-							var hash:String = item.hash;
+							var hash:String = (item.hash) ? item.hash : "";
 
 							if(userVo.userName == userName && (userVo.privilege != privilege || userVo.secret != secret))
 							{

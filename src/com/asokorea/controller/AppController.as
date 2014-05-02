@@ -464,12 +464,12 @@ package com.asokorea.controller
 			<report>
 				<sheet name="task">
 					<cellValues>
-						<cellValue name="createDate" ref="E3" type="date">{new Date().time}</cellValue>
+						<cellValue name="createDate" ref="E4" type="date">{new Date().time}</cellValue>
 						<cellValue name="total" ref="B4" type="number">{appModel.hostCount}</cellValue>
 						<cellValue name="success" ref="B5" type="number">{appModel.successHostCount}</cellValue>
 						<cellValue name="fail" ref="B6" type="formula">B4-B5</cellValue>
 					</cellValues>
-					<rows startRef="A10" endRef="E10" />
+					<rows name="hostlist" startRef="A10" endRef="E10" />
 				</sheet>
 			</report>;
 			
@@ -503,6 +503,75 @@ package com.asokorea.controller
 			appModel.excelUtil.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorXmlData);
 			appModel.excelUtil.addEventListener("notFoundJava", noJavaHandler);			
 			appModel.excelUtil.exportExcel(xmlFile, excelFile);
+		}
+		
+		[EventHandler("exportUserExcel")]
+		public function exportUserExcel():void
+		{
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_BUSY;
+			
+			var dateFormatter:DateFormatter = new DateFormatter();
+			dateFormatter.formatString = "YYYY-MM-DD HH:NN:SS"
+			var createDate:Date = new Date();
+			var xml:XML = 
+			<report>
+				<sheet name="user">
+					<cellValues>
+						<cellValue name="createDate" ref="E4" type="date">{new Date().time}</cellValue>
+						<cellValue name="total" ref="B4" type="number">{appModel.totalUsersCount}</cellValue>
+						<cellValue name="success" ref="B5" type="number">{appModel.standardUserCount}</cellValue>
+						<cellValue name="fail" ref="B6" type="formula">B4-B5</cellValue>
+					</cellValues>
+					<rows name="standardUserList" startRef="A10" endRef="D10" />
+				</sheet>
+				<sheet name="nonStandard">
+					<rows name="nonStandardUserList" startRef="A5" endRef="D5" />
+				</sheet>
+			</report>;
+			
+			var standardUserList:XML = xml..rows.(@name=="standardUserList");
+			var nonStandardUserList:XML = xml..rows.(@name=="nonStandardUserList");
+			
+			getStandardXML(standardUserList);
+			getNonStandardXML(nonStandardUserList);
+		}
+		
+		private function getStandardXML(parent:XML):void
+		{
+//			for each (var userVo:UserVo in appModel.standardUserList) 
+//			{
+//				var userCount:int = (hostVo.isComplete && hostVo.userList) ? hostVo.userList.length : 0; 
+//				var errorLog:String = (hostVo.isComplete && hostVo.isConnected) ? "" : hostVo.output; 
+//				
+//				var row:XML = 
+//					<row>
+//						<rowValue name="ip" ref="B10" type="string">{hostVo.ip}</rowValue>
+//						<rowValue name="hostName" ref="A10" type="string">{hostVo.hostName?hostVo.hostName:""}</rowValue>
+//						<rowValue name="isComplete" ref="C10" type="string">{hostVo.isComplete?"성공":"실패"}</rowValue>
+//						<rowValue name="userCount" ref="D10" type="number">{userCount}</rowValue>
+//						<rowValue name="errorLog" ref="E10" type="string">{errorLog}</rowValue>
+//					</row>;
+//				parent.appendChild(row);
+//			}
+		}
+		
+		private function getNonStandardXML(parent:XML):void
+		{
+//			for each (var userVo:UserVo in appModel.standardUserList) 
+//			{
+//				var userCount:int = (hostVo.isComplete && hostVo.userList) ? hostVo.userList.length : 0; 
+//				var errorLog:String = (hostVo.isComplete && hostVo.isConnected) ? "" : hostVo.output; 
+//				
+//				var row:XML = 
+//					<row>
+//						<rowValue name="ip" ref="B10" type="string">{hostVo.ip}</rowValue>
+//						<rowValue name="hostName" ref="A10" type="string">{hostVo.hostName?hostVo.hostName:""}</rowValue>
+//						<rowValue name="isComplete" ref="C10" type="string">{hostVo.isComplete?"성공":"실패"}</rowValue>
+//						<rowValue name="userCount" ref="D10" type="number">{userCount}</rowValue>
+//						<rowValue name="errorLog" ref="E10" type="string">{errorLog}</rowValue>
+//					</row>;
+//				parent.appendChild(row);
+//			}
 		}
 		
 		private function onOutputExcelData(event:Event):void

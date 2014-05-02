@@ -25,6 +25,18 @@ package com.asokorea.model.vo
 		private var _hostListXml:XML;
 
 		public var hostList:ArrayCollection;
+		
+		public function getHostListFile():File
+		{
+			if(_exportedHostListFile)
+			{
+				return new File(_exportedHostListFile);
+			}else{
+				var file:File = _taskBaseDir.resolvePath("hostList.xml");
+				_exportedHostListFile = file.nativePath;
+				return file;
+			}
+		}
 
 		public function getHostVo(ip:String):HostVo
 		{
@@ -144,7 +156,7 @@ package com.asokorea.model.vo
 			
 			try
 			{
-				file = _taskBaseDir.resolvePath("hostList.xml");
+				file = getHostListFile();
 				data = data.replace(/\n/g, File.lineEnding);
 				fileStream.open(file, FileMode.WRITE);
 				fileStream.writeUTFBytes(data); 

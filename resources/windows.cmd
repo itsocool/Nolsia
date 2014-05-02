@@ -16,7 +16,7 @@ goto END
 	    copy /y .\bin\msvcr100.dll C:\Windows\System32\msvcr100.dll
 	)
 
-	if %1 == excel goto EXCEL
+	if %1 == import goto IMPORT
 	if %1 == ssh goto SSH
 	if %1 == shell goto SHELL
 	if %1 == export goto EXPORT
@@ -26,13 +26,13 @@ goto END
 	@set src=%tmp:[_]= %
 	@set tmp2=%~3
 	@set target=%tmp2:[_]= %
-	.\bin\jre7\bin\java -jar .\bin\Xml2Excel.jar "%src%" "%target%"
+	.\bin\jre7\bin\java -jar .\bin\ExcelUtil.jar -export "%src%" "%target%"
 	goto END
 
-:EXCEL
+:IMPORT
 	@set tmp=%~2
 	@set src=%tmp:[_]= %
-	.\bin\jre7\bin\java -jar .\bin\Excel2Xml.jar "%src%"
+	.\bin\jre7\bin\java -jar .\bin\ExcelUtil.jar -import "%src%"
 	goto END
 	
 :SSH

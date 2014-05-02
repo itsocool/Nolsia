@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <update xmlns="http://ns.adobe.com/air/framework/update/description/3.1">
-	<versionNumber>1.0.1</versionNumber>
-	<versionLabel>v1.0.1</versionLabel>
-	<url><![CDATA[https://bitbucket.org/yesican/nolsia/downloads/MSSHTool-v1.0.1.exe]]></url>
+	<versionNumber>1.0.2</versionNumber>
+	<versionLabel>v1.0.2</versionLabel>
+	<url><![CDATA[https://bitbucket.org/yesican/nolsia/downloads/MSSHTool-v1.0.2.exe]]></url>
 	<description>
-		<text xml:lang="ko"><![CDATA[아소코리아 멀티 SSH 툴 릴리즈 버전 1.0.1]]></text> 
+		<text xml:lang="ko"><![CDATA[아소코리아 멀티 SSH 툴 릴리즈 버전 1.0.2]]></text> 
 		<text xml:lang="en"><![CDATA[This is the latest version of the Release Candidate]]></text>
 	</description>
 </update>

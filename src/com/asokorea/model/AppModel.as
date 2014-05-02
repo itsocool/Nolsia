@@ -4,7 +4,7 @@ package com.asokorea.model
 	import com.asokorea.model.vo.SettingsVo;
 	import com.asokorea.model.vo.TaskVo;
 	import com.asokorea.supportclass.NativeUpdater;
-	import com.asokorea.util.Excel2Xml;
+	import com.asokorea.util.ExcelUtil;
 	import com.asokorea.util.MultiSSH;
 	
 	import flash.filesystem.File;
@@ -48,7 +48,7 @@ package com.asokorea.model
 
 		public var failHostCount:int = 0;
 		
-		public var excel2Xml:Excel2Xml;
+		public var excelUtil:ExcelUtil;
 		
 		public var multiSSH:MultiSSH;
 		

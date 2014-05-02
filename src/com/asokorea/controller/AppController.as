@@ -11,7 +11,7 @@ package com.asokorea.controller
 	import com.asokorea.model.vo.UserVo;
 	import com.asokorea.supportclass.NativeUpdater;
 	import com.asokorea.util.DateUtil;
-	import com.asokorea.util.Excel2Xml;
+	import com.asokorea.util.ExcelUtil;
 	import com.asokorea.util.Global;
 	import com.asokorea.util.MultiSSH;
 	
@@ -108,7 +108,8 @@ package com.asokorea.controller
 		public function loadHostList(event:FileEventEX):void
 		{
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_BUSY;
-			getHostList(event.file);
+			var xmlFile:File = appModel.selectedTaskVo.getHostListFile();
+			getHostList(event.file, xmlFile);
 		}
 		
 		protected function onSelectHostList(event:Event):void
@@ -116,32 +117,32 @@ package com.asokorea.controller
 			appModel.selectedHostListFile.removeEventListener(Event.SELECT, onSelectHostList);
 			appModel.selectedHostListFile.removeEventListener(Event.CANCEL, onCancel)
 			
+			var xmlFile:File = appModel.selectedTaskVo.getHostListFile();				
+				
 			if (appModel.selectedHostListFile && appModel.selectedHostListFile.exists && !appModel.selectedHostListFile.isDirectory)
 			{
 				appModel.selectedTaskVo.importHostListFile = appModel.selectedHostListFile.nativePath;
 				appModel.selectedTaskVo.save();
-				getHostList(appModel.selectedHostListFile);				
+				getHostList(appModel.selectedHostListFile, xmlFile);				
 			}
 		}
 		
-		private function getHostList(hostFile:File):void
+		private function getHostList(hostFile:File, xmlFile:File):void
 		{
 			appModel.hostCount = 0;
 			appModel.successHostCount = 0;
 			appModel.failHostCount = 0;
 			
-			var excel2xml:Excel2Xml = new Excel2Xml()
-			appModel.excel2Xml = excel2xml;
-			excel2xml.addEventListener(Event.COMPLETE, onOutputXmlData);
-			excel2xml.addEventListener(Event.STANDARD_ERROR_CLOSE, onErrorXmlData);
-			excel2xml.addEventListener("notFoundJava", noJavaHandler);
-			excel2xml.init(hostFile);
-			excel2xml.convertXML();
+			appModel.excelUtil = new ExcelUtil();
+			appModel.excelUtil.addEventListener(Event.COMPLETE, onOutputXmlData);
+			appModel.excelUtil.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorXmlData);
+			appModel.excelUtil.addEventListener("notFoundJava", noJavaHandler);
+			appModel.excelUtil.importExcel(hostFile, xmlFile);
 		}
 		
 		protected function noJavaHandler(event:Event):void
 		{
-			closeExcel2Xml();
+			closeExcelUtil();
 			closeMSSH();
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_FIRST;			
 			
@@ -156,9 +157,7 @@ package com.asokorea.controller
 		
 		public function onOutputXmlData(event:Event):void
 		{
-			var excel2xml:Excel2Xml = appModel.excel2Xml;
-			var data:String = excel2xml.output;
-			var xml:XML = new XML(data);
+			var xml:XML = appModel.excelUtil.xml;
 			
 			appModel.selectedTaskVo.hostListXml = xml;
 			appModel.selectedTaskVo.save();
@@ -172,14 +171,14 @@ package com.asokorea.controller
 				appModel.hostCount = 0;
 			}
 			
-			closeExcel2Xml();
+			closeExcelUtil();
 			
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
 		
 		public function onErrorXmlData(event:ProgressEvent):void
 		{
-			closeExcel2Xml();
+			closeExcelUtil();
 			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;
 		}
 		
@@ -456,19 +455,22 @@ package com.asokorea.controller
 		[EventHandler("exportExcel")]
 		public function exportExcel():void
 		{
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_BUSY;
+			
 			var dateFormatter:DateFormatter = new DateFormatter();
 			dateFormatter.formatString = "YYYY-MM-DD HH:NN:SS"
 			var createDate:Date = new Date();
 			var xml:XML = 
 			<report>
-				<summary>44
-					<total>{appModel.hostCount}</total>
-					<success>{appModel.successHostCount}</success>
-				</summary>
-				<createDate>{dateFormatter.format(createDate)}</createDate>
-				<createTimeStamp>{createDate.time}</createTimeStamp>
-				<hosts>
-				</hosts>
+				<sheet name="task">
+					<cellValues>
+						<cellValue name="createDate" ref="E3" type="date">{new Date().time}</cellValue>
+						<cellValue name="total" ref="B4" type="number">{appModel.hostCount}</cellValue>
+						<cellValue name="success" ref="B5" type="number">{appModel.successHostCount}</cellValue>
+						<cellValue name="fail" ref="B6" type="formula">B4-B5</cellValue>
+					</cellValues>
+					<rows startRef="A10" endRef="E10" />
+				</sheet>
 			</report>;
 			
 			for each (var hostVo:HostVo in appModel.selectedTaskVo.hostList) 
@@ -476,21 +478,45 @@ package com.asokorea.controller
 				var userCount:int = (hostVo.isComplete && hostVo.userList) ? hostVo.userList.length : 0; 
 				var errorLog:String = (hostVo.isComplete && hostVo.isConnected) ? "" : hostVo.output; 
 				
-				var host:XML = 
-				<host>
-					<ip>{hostVo.ip}</ip>
-					<hostName>{hostVo.hostName}</hostName>
-					<isComplete>{hostVo.isConnected}</isComplete>
-					<userCount>{userCount}</userCount>
-					<errorLog>{errorLog}</errorLog>
-				</host>;
-				
-				xml..hosts.appendChild(host);
+				var row:XML = 
+					<row>
+						<rowValue name="ip" ref="B10" type="string">{hostVo.ip}</rowValue>
+						<rowValue name="hostName" ref="A10" type="string">{hostVo.hostName?hostVo.hostName:""}</rowValue>
+						<rowValue name="isComplete" ref="C10" type="string">{hostVo.isComplete?"성공":"실패"}</rowValue>
+						<rowValue name="userCount" ref="D10" type="number">{userCount}</rowValue>
+						<rowValue name="errorLog" ref="E10" type="string">{errorLog}</rowValue>
+					</row>;
+				xml..rows.appendChild(row);
 			}
 			
-			var file:File = appModel.selectedTaskVo.taskBaseDir.resolvePath("report.xml");
-			Global.saveXml(xml, file);
-			file.openWithDefaultApplication();
+			var dateForamtter:DateFormatter = new DateFormatter();
+			dateForamtter.formatString = "YYYYMMDD-HHNNSS";
+			var exportFileName:String = "report_" +  dateForamtter.format(new Date()) + ".xlsx";
+			var templeteFile:File = Global.TEMPLETE_DIR.resolvePath("../report.xlsx")
+			var xmlFile:File = appModel.selectedTaskVo.taskBaseDir.resolvePath("report.xml");
+			var excelFile:File = appModel.selectedTaskVo.taskBaseDir.resolvePath(exportFileName);
+			
+			templeteFile.copyTo(excelFile, true);
+			Global.saveXml(xml, xmlFile);
+			appModel.excelUtil = new ExcelUtil();
+			appModel.excelUtil.addEventListener(Event.COMPLETE, onOutputExcelData);
+			appModel.excelUtil.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorXmlData);
+			appModel.excelUtil.addEventListener("notFoundJava", noJavaHandler);			
+			appModel.excelUtil.exportExcel(xmlFile, excelFile);
+		}
+		
+		private function onOutputExcelData(event:Event):void
+		{
+			var excelFile:File = appModel.excelUtil.excelFile;
+			
+			if(excelFile && excelFile.exists && !excelFile.isDirectory)
+			{
+				excelFile.openWithDefaultApplication();
+			}
+			
+			closeExcelUtil();
+			
+			navModel.MAIN_CURRENT_SATAE = NavigationModel.MAIN_OPEN;	
 		}
 		
 		[EventHandler("openUsersReport")]
@@ -604,17 +630,16 @@ package com.asokorea.controller
 			return result;
 		}
 		
-		private function closeExcel2Xml():void
+		private function closeExcelUtil():void
 		{
-			var excel2xml:Excel2Xml = appModel.excel2Xml;
-			
-			if(excel2xml)
+			if(appModel.excelUtil)
 			{
-				excel2xml.removeEventListener(Event.COMPLETE, onOutputXmlData);
-				excel2xml.removeEventListener(Event.STANDARD_ERROR_CLOSE, onErrorXmlData);
-				excel2xml.removeEventListener("notFoundJava", noJavaHandler);
-				excel2xml.dispose();
-				excel2xml = null;
+				appModel.excelUtil.removeEventListener(Event.COMPLETE, onOutputXmlData);
+				appModel.excelUtil.removeEventListener(Event.COMPLETE, onOutputExcelData);
+				appModel.excelUtil.removeEventListener(Event.STANDARD_ERROR_CLOSE, onErrorXmlData);
+				appModel.excelUtil.removeEventListener("notFoundJava", noJavaHandler);
+				appModel.excelUtil.dispose();
+				appModel.excelUtil = null;
 			}
 		}		
 		

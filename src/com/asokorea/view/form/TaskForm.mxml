@@ -10,7 +10,7 @@
 			import com.asokorea.model.enum.Icons;
 			import com.asokorea.model.vo.TaskVo;
 			import com.asokorea.presentation.MainViewPresentationModel;
-			import com.asokorea.util.Excel2Xml;
+			import com.asokorea.util.ExcelUtil;
 			import com.asokorea.util.Global;
 			
 			import mx.collections.ArrayCollection;
@@ -86,7 +86,7 @@
 				}
 				
 				_excelFile.addEventListener(Event.SELECT, onSelectFile);
-				_excelFile.browseForOpen("Select Host list File", Excel2Xml.hostFileTypeFilter);
+				_excelFile.browseForOpen("Select Host list File", ExcelUtil.hostFileTypeFilter);
 			}
 
 			protected function onSelectFile(event:Event):void

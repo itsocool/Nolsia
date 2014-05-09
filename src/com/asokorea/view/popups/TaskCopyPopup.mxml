@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="550" height="146" title="Task Copy"
+			   close="close()"
+			   creationComplete="init(event)">
+	<s:layout>
+		<s:HorizontalLayout paddingBottom="8" paddingLeft="8" paddingRight="8" paddingTop="8"
+							verticalAlign="middle"/>
+	</s:layout>
+	<fx:Metadata>
+		[Event(name="taskCopy", type="flash.events.Event")]
+	</fx:Metadata>
+	<fx:Script>
+		<![CDATA[
+			import com.asokorea.model.enum.Icons;
+			
+			import mx.events.FlexEvent;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			
+			[Bindable]
+			public var taskName:String;
+	
+			protected function init(event:FlexEvent):void
+			{
+				focusManager.setFocus(txiTaskName);
+				txiTaskName.selectRange(0, txiTaskName.text.length);
+			}
+			
+			public function close():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			protected function copy():void
+			{
+				taskName = txiTaskName.text
+				var e:Event = new Event("taskCopy",true,false);
+				dispatchEvent(e);
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<mx:Label text="Task Name"/>
+	<s:TextInput id="txiTaskName" width="100%" enter="copy()" maxChars="40" restrict="0-9A-z_-" text="{taskName}"/>
+	<mx:Button id="btnCopy" icon="{Icons.PAGE_COPY}" label="Copy" click="copy()"/>
+	<mx:Button id="btnCancel" icon="{Icons.CANCEL}" label="Cancel" click="close()"/>
+</s:TitleWindow>

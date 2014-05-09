@@ -57,6 +57,9 @@ package com.asokorea.model.enum
 		[Embed(source="assets/icons/monitor_go.png")]
 		public static const MONITOR_GO:Class;
 
+		[Embed(source="assets/icons/page_copy.png")]
+		public static const PAGE_COPY:Class;
+
 		[Embed(source="assets/icons/page_excel.png")]
 		public static const PAGE_EXCEL:Class;
 

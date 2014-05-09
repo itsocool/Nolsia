@@ -30,6 +30,12 @@
 							break;
 						}
 
+						case "btnCopy":
+						{
+							model.taskCopy(taskVo);
+							break;
+						}
+
 						case "btnEdit":
 						{
 							model.taskEdit(taskVo);

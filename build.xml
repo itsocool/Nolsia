@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<project name="SSHTest" default="" basedir=".">
-	<target name="ssh">
-		<sshexec host="220.64.140.216" trust="yes" username="nolsia" password="123456" commandResource="command.sh" />			
-	</target> 
-</project>

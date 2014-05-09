@@ -8,6 +8,7 @@
 		 currentState="{ model.currentState }">
 	<fx:Script>
 		<![CDATA[
+			import com.asokorea.model.AppModel;
 			import com.asokorea.model.enum.Icons;
 			import com.asokorea.model.vo.HostVo;
 			import com.asokorea.presentation.MainViewPresentationModel;
@@ -17,6 +18,7 @@
 			import mx.collections.Sort;
 			import mx.events.DataGridEvent;
 			import mx.events.ListEvent;
+			import mx.utils.StringUtil;
 
 			[Bindable]
 			[Inject]
@@ -74,7 +76,24 @@
 				
 				if(hostVo)
 				{
-					if(filter == "SUCCESS")
+					if(filter == "IP")
+					{
+						var criteria:String = txiIPFilter.text;
+						var pattern:RegExp;
+						
+						if(hostVo.ip && criteria && StringUtil.trim(criteria).length > 0)
+						{
+							criteria = criteria.replace(/\?/,".");
+							criteria = criteria.replace(/\./,"\.");
+							criteria = criteria.replace(/\*{2}/,".+");
+							criteria = criteria.replace(/\*/,".{1,3}");
+							pattern = new RegExp(criteria);
+							var temp:String = hostVo.ip.replace(pattern, "");
+							result = (temp) ? false : true;
+						}else{
+							result = true;
+						}
+					}else if(filter == "SUCCESS")
 					{
 						result = hostVo.isComplete;
 					}else if(filter == "FAIL")
@@ -140,6 +159,7 @@
 			<s:VerticalLayout paddingBottom="6" paddingLeft="6" paddingRight="6" paddingTop="6" />
 		</s:layout>
 		<s:HGroup width="100%">
+			<mx:Label text="Current Task : {model.appModel.selectedTaskVo.taskName}" fontSize="16" fontWeight="bold" fontFamily="verdana" />
 			<mx:Spacer width="100%"/>
 			<mx:LinkButton id="btnUpdate" textAlign="right" icon="{Icons.INFORMATION}" label="Update"
 						   click="model.update()" enabled="{model.appModel.updater.hasUpdate}"/>
@@ -179,10 +199,12 @@
 							   enabled="false" enabled.PROCESS="true"
 							   icon="{Icons.STOP}"  mouseChildren="false" buttonMode="true"/>
 				</s:HGroup>
-				<s:HGroup verticalAlign="middle" width="100%" enabled="{model.appModel.successHostCount > 0}"  enabled.PROCESS="false">
+				<s:HGroup verticalAlign="middle" width="100%" enabled="{model.appModel.hostCount > 0}" enabled.PROCESS="false">
 					<s:RadioButton value="ALL" group="{hostFilter}" label="All({model.appModel.hostCount})" selected="true" />
-					<s:RadioButton value="SUCCESS" group="{hostFilter}" label="Success({model.appModel.successHostCount})" />
-					<s:RadioButton value="FAIL" group="{hostFilter}" label="Fail({model.appModel.failHostCount})" />
+					<s:RadioButton value="SUCCESS" group="{hostFilter}" label="Success({model.appModel.successHostCount})" enabled="{model.appModel.successHostCount > 0}" />
+					<s:RadioButton value="FAIL" group="{hostFilter}" label="Fail({model.appModel.failHostCount})" enabled="{model.appModel.failHostCount > 0}" />
+					<s:RadioButton value="IP" group="{hostFilter}" label="Filtered IP({model.appModel.ipHostCount})" />
+					<mx:TextInput id="txiIPFilter" width="100%" restrict="0-9A-z.?*" enter="hostFilterChange(event)" enabled="{(hostFilter.selectedValue == 'IP')}" />
 					<mx:Spacer width="100%"/>
 					<mx:Button icon="{Icons.PAGE_EXCEL}" click="model.exportExcel()" label="Export Excel" mouseChildren="false" buttonMode="true" />
 				</s:HGroup>

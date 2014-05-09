@@ -9,8 +9,10 @@ package com.asokorea.controller
 	import com.asokorea.supportclass.LOG;
 	import com.asokorea.view.form.SettingsForm;
 	import com.asokorea.view.form.TaskForm;
+	import com.asokorea.view.popups.TaskCopyPopup;
 	
 	import flash.display.DisplayObject;
+	import flash.events.Event;
 	import flash.filesystem.File;
 	
 	import mx.controls.Alert;
@@ -58,6 +60,25 @@ package com.asokorea.controller
 			taskModel.taskForm.taskVo = new TaskVo();
 			taskModel.taskForm.currentState = NavigationModel.TASK_ADD;
 			PopUpManager.centerPopUp(taskModel.taskForm);
+		}
+		
+		[EventHandler(event="TaskEvent.COPY")]
+		public function copyTask(event:TaskEvent):void
+		{
+			var app:DisplayObject = FlexGlobals.topLevelApplication as DisplayObject;
+			var sourceTaskVo:TaskVo = event.taskVo;
+			var targetTaskVo:TaskVo = null;
+			
+			taskModel.taskCopyPopup = PopUpManager.createPopUp(app, TaskCopyPopup) as TaskCopyPopup;
+			taskModel.taskCopyPopup.taskName = "Copy of " + sourceTaskVo.taskName;
+			taskModel.taskCopyPopup.addEventListener("taskCopy", function(e:Event):void{
+				targetTaskVo = sourceTaskVo.copyTask(taskModel.taskCopyPopup.taskName);
+				appModel.settingsVo.taskList.addItem(targetTaskVo);
+				appModel.settingsVo.taskList.refresh();
+				appModel.settingsVo.save();
+				taskModel.taskCopyPopup.close();
+			});
+			PopUpManager.centerPopUp(taskModel.taskCopyPopup);
 		}
 		
 		[EventHandler(event="TaskEvent.OPEN")]

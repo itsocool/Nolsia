@@ -10,6 +10,7 @@ package com.asokorea.model
 		
 		public static const TASK_EDIT:String = "EDIT";
 		public static const TASK_ADD:String = "ADD";
+		public static const TASK_COPY:String = "COPY";
 		
 		public static const PATH_LOGGED_OUT:String 			= "loggedOut";
 		public static const PATH_LOGGED_IN:String 			= "loggedIn";

@@ -13,6 +13,7 @@ package com.asokorea.event
 		public static const DELETE:String = "delete";
 		public static const EXECUTE:String = "execute";
 		public static const STOP:String = "stop";
+		public static const COPY:String = "copy";
 		
 		private var _task:TaskVo;
 		

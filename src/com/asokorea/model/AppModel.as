@@ -47,6 +47,8 @@ package com.asokorea.model
 		public var successHostCount:int = 0;
 
 		public var failHostCount:int = 0;
+
+		public var ipHostCount:int = 0;
 		
 		public var excelUtil:ExcelUtil;
 		

@@ -9,6 +9,7 @@ package com.asokorea.model.vo
 	import flash.xml.XMLDocument;
 	
 	import mx.collections.ArrayCollection;
+	import mx.utils.StringUtil;
 
 	[Bindable]
 	public class TaskVo
@@ -267,19 +268,35 @@ package com.asokorea.model.vo
 				{
 					var row:Object= value.sheet[0].row[i];
 					
-					if(row && row.col && row.col[0].toString() && row.col[1].toString() && row.col[2].toString())
+					if(row && row.col && row.col[0] && StringUtil.trim(row.col[0].toString()).length > 0)
 					{
-						hostVo = new HostVo();
-						hostVo.no = i + 1;
-						hostVo.ip = row.col[0].toString();
+						var hostIp:String = null; 
+						var hostUserName:String = null; 
+						var hostPassword:String = null; 
 						
-						if(!hostVo.ip || hostVo.ip.search(/(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/) < 0)
+						hostIp = StringUtil.trim(row.col[0].toString()); 
+						
+						if(!hostIp || hostIp.search(/(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/) < 0)
 						{
 							continue;
 						}
 						
-						hostVo.user = row.col[1].toString() || sshVo.user;
-						hostVo.password = row.col[2].toString() || sshVo.password;
+						hostVo = new HostVo();
+						hostVo.no = i + 1;
+						hostVo.ip = hostIp;
+						
+						if(row.col[1] && StringUtil.trim(row.col[1].toString()).length > 0)
+						{
+							hostUserName = StringUtil.trim(row.col[1].toString()); 
+						}
+						
+						if(row.col[2] && StringUtil.trim(row.col[2].toString()).length > 0)
+						{
+							hostPassword = StringUtil.trim(row.col[2].toString()); 
+						}
+						
+						hostVo.user = hostUserName || sshVo.user;
+						hostVo.password = hostPassword || sshVo.password;
 						hostVo.port ||= 22;
 						hostVo.taskName = taskName;
 						list.addItem(hostVo);
@@ -317,5 +334,15 @@ package com.asokorea.model.vo
 				save();
 			}
 		}		
+		
+		public function copyTask(taskName:String):TaskVo
+		{
+			var result:TaskVo = new TaskVo();
+			result.taskName = taskName;
+			result.taskBaseDir = Global.TASK_BASE_DIR.resolvePath(taskName);
+			taskBaseDir.copyTo(result.taskBaseDir);
+			result.load(taskName);
+			return result;
+		}
 	}
 }

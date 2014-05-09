@@ -56,6 +56,11 @@ package com.asokorea.presentation
 			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.OPEN, taskVo));
 		}
 		
+		public function taskCopy(taskVo:TaskVo):void
+		{
+			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.COPY, taskVo));
+		}
+		
 		public function taskEdit(taskVo:TaskVo):void
 		{
 			dispatcher.dispatchEvent(new TaskEvent(TaskEvent.EDIT, taskVo));
@@ -199,5 +204,6 @@ package com.asokorea.presentation
 		{
 			dispatcher.dispatchEvent(new Event("exportExcel"));
 		}
+
 	}
 }
